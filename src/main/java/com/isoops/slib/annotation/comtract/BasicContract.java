@@ -34,7 +34,6 @@ public class BasicContract {
      * @param clazz 对象class类型
      * @param <T> 对象泛型
      * @return f
-     * @throws Exception e
      */
     protected <T> T getArgsByUri(HttpServletRequest request, Class<T> clazz) {
         //初始化泛型对象

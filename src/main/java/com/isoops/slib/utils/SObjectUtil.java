@@ -172,10 +172,7 @@ public class SObjectUtil {
 	}
 
 	/**
-	 * 遍历数组->
-	 * 获取数组中对象某个值->
-	 * 重组成一个新数组
-	 *
+	 * 遍历数组 获取数组中对象某个值 重组成一个新数组
 	 * @param list source list
 	 * @param function 获取的值
 	 * @param <T> source list 里的对象类型
@@ -197,9 +194,7 @@ public class SObjectUtil {
 	}
 
 	/**
-	 * 遍历数组->
-	 * 获取数组中对象某个值==value->
-	 * 将满足条件的对象重组成一个新数组
+	 * 遍历数组 获取数组中对象某个值==value 将满足条件的对象重组成一个新数组
 	 *
 	 * @param list source list
 	 * @param function 需要判断的字段

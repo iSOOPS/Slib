@@ -14,13 +14,11 @@ import java.util.List;
  * ProtoStuffSerializerUtil
  *
  * @author Sirius
- * @date 2019-1-8
  */
 public class ProtoStuffSerializerUtil {
     /**
      * 序列化对象
-     * @param obj
-     * @return
+     * @param obj o
      */
     public static <T> byte[] serialize(T obj) {
         if (obj == null) {

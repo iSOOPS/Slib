@@ -11,20 +11,9 @@
 
     <groupId>com.isoops</groupId>
     <artifactId>SLib</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.0.0-RELEASE</version>
     <name>SLib</name>
-    <description>SLib</description>
-
-    <distributionManagement>
-        <repository>
-            <id>rdc-releases</id>
-            <url>https://packages.aliyun.com/maven/repository/2015536-release-UkrkIF/</url>
-        </repository>
-        <snapshotRepository>
-            <id>rdc-snapshots</id>
-            <url>https://packages.aliyun.com/maven/repository/2015536-snapshot-nqsGxz/</url>
-        </snapshotRepository>
-    </distributionManagement>
+    <description>Java gen Utils</description>
 
     <properties>
         <java.version>8</java.version>
@@ -39,7 +28,9 @@
         <servlet.version>3.1.0</servlet.version>
         <mybatisplus.version>3.3.1</mybatisplus.version>
         <protostuff.version>1.4.0</protostuff.version>
+        <javadoc.version>2.9.1</javadoc.version>
 
+        <gpg.keyname>B4BEED15FBD83F5FB041580B7B43B3D8834843BC</gpg.keyname>
         <!--打包跳过测试-->
         <skipTests>true</skipTests>
     </properties>
@@ -171,13 +162,125 @@
             <scope>test</scope>
         </dependency>
 
+        <!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-javadoc-plugin -->
+        <dependency>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <version>${javadoc.version}</version>
+        </dependency>
     </dependencies>
+
+
+
+
+    <licenses>
+        <!-- 开源协议 -->
+        <license>
+            <name>The Apache Software License, Version2.0</name>
+            <url>http://www.apache.org/licenses/</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+    <!-- scm -->
+    <scm>
+        <tag>master</tag>
+        <url>https://github.com/iSOOPS/Slib</url>
+        <connection>scm:git:git@github.com:iSOOPS/Slib.git</connection>
+        <developerConnection>scm:git:git://github.com:iSOOPS/Slib.git</developerConnection>
+    </scm>
+    <!-- issues -->
+    <issueManagement>
+        <system>GitHub Issue Management</system>
+        <url>https://github.com/iSOOPS/Slib/issues</url>
+    </issueManagement>
+    <!-- 开发者信息 -->
+    <developers>
+        <developer>
+            <id>iSOOPS</id>
+            <name>Samuel-liu</name>
+            <email>samuelliuse@gmail.com</email>
+            <url>https://isoops.com/</url>
+            <timezone>+8</timezone>
+        </developer>
+    </developers>
+    <!-- distributionManagement -->
+    <distributionManagement>
+        <snapshotRepository>
+            <id>ossrh</id>
+            <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+        <repository>
+            <id>ossrh</id>
+            <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
+    </distributionManagement>
+
 
     <build>
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+            <!-- maven 打包时附带源码文件插件 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>3.2.1</version>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>jar-no-fork</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- 生成 javadoc 插件 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>2.9.1</version>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- sonatype staging 插件 -->
+            <plugin>
+                <groupId>org.sonatype.plugins</groupId>
+                <artifactId>nexus-staging-maven-plugin</artifactId>
+                <version>1.6.7</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <serverId>ossrh</serverId>
+                    <nexusUrl>https://s01.oss.sonatype.org/</nexusUrl>
+                    <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                </configuration>
+            </plugin>
+            <!-- maven-gpg 插件 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-gpg-plugin</artifactId>
+                <version>1.5</version>
+                <executions>
+                    <execution>
+                        <id>sign-artifacts</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>sign</goal>
+                        </goals>
+                        <configuration>
+                            <keyname>${gpg.keyname}</keyname>
+                            <passphraseServerId>${gpg.keyname}</passphraseServerId>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
