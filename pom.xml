@@ -17,7 +17,7 @@
 
     <properties>
         <java.version>8</java.version>
-        <commons.lang.version>3.9</commons.lang.version>
+        <commons.lang.version>3.12.0</commons.lang.version>
         <commons.io.version>2.11.0</commons.io.version>
         <commons.configuration.version>1.10</commons.configuration.version>
         <fastjson.version>2.0.26</fastjson.version>
@@ -25,7 +25,7 @@
         <hutool.version>5.8.16</hutool.version>
         <pagehelper.spring.boot.version>1.4.6</pagehelper.spring.boot.version>
         <aspectjweaver.version>1.9.19</aspectjweaver.version>
-        <servlet.version>3.1.0</servlet.version>
+        <servlet.version>4.0.1</servlet.version>
         <mybatisplus.version>3.5.3.1</mybatisplus.version>
         <protostuff.version>1.8.0</protostuff.version>
         <javadoc.version>3.5.0</javadoc.version>
