@@ -11,7 +11,7 @@
 
     <groupId>com.isoops</groupId>
     <artifactId>SLib</artifactId>
-    <version>1.0.1-RELEASE</version>
+    <version>1.0.2-RELEASE</version>
     <name>SLib</name>
     <description>Java gen Utils</description>
 
