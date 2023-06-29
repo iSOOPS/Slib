@@ -28,7 +28,6 @@ public class AbstractObject {
 		SObjectUtil.setProperty(this,key,value);
 	}
 
-
 	/**
 	 * 浅度克隆
 	 */
@@ -130,13 +129,7 @@ public class AbstractObject {
 	}
 
 	public static Boolean isAbstractObject(Class<?> clazz) {
-		String[] fieldsNames = SObjectUtil.getFiledName(clazz);
-		for (String fieldsName : fieldsNames) {
-			if (fieldsName.indexOf("AbstractObject") >= 0) {
-				return true;
-			}
-		}
-		return false;
+		return clazz.getName().contains("AbstractObject");
 	}
 
 

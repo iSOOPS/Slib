@@ -4,7 +4,6 @@ package com.isoops.slib.utils;
 import cn.hutool.core.collection.CollUtil;
 import com.isoops.slib.pojo.AbstractObject;
 import com.isoops.slib.pojo.BeanCopierUtils;
-import com.isoops.slib.pojo.IFunction;
 import lombok.SneakyThrows;
 
 import java.lang.invoke.SerializedLambda;
@@ -13,6 +12,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.function.Function;
 
@@ -23,6 +23,10 @@ import java.util.function.Function;
  */
 public class SObjectUtil {
 
+	/**
+	 * 克隆生成
+	 * ps:V=domainClone(T,V.class)
+	 */
 	public static <T,V> V domainClone(T domain,Class<V> clazz) {
 		V target = null;
 		try {
@@ -35,6 +39,10 @@ public class SObjectUtil {
 		return target;
 	}
 
+	/**
+	 * 克隆写入
+	 * ps:V=domainClone(T,V)
+	 */
 	public static <T,V> V domainClone(T domain,V target) {
 		assert target != null;
 		BeanCopierUtils.copyProperties(domain, target);
@@ -42,10 +50,8 @@ public class SObjectUtil {
 	}
 
 	/**
-	 * 转换集合
-	 * @param sourceList 源集合
-	 * @param targetClazz 目标集合元素类型
-	 * @return 转换后的集合
+	 * 批量克隆写入
+	 * ps:List[K]=convertList(List[T],K.class)
 	 */
 	@SneakyThrows
 	public static <T,K> List<K> convertList(List<T> sourceList, Class<K> targetClazz) {
@@ -58,7 +64,7 @@ public class SObjectUtil {
 				targetList.add( ((AbstractObject) sourceObject).clone(targetClazz));
 				continue;
 			}
-			K objectNew = targetClazz.newInstance();
+			K objectNew = targetClazz.getDeclaredConstructor().newInstance();
 			BeanCopierUtils.copyProperties(sourceObject, objectNew);
 			targetList.add(objectNew);
 		}
@@ -66,27 +72,42 @@ public class SObjectUtil {
 	}
 
 	/**
-	 * 转换集合-深度克隆
-	 * @param sourceList 源集合
-	 * @param targetClazz 目标集合元素类型
-	 * @return 转换后的集合
+	 * 深度克隆 domain 定向(内部对象也会克隆)
+	 * ps:List[T]=convertList(List[T],T.class,CloneDirection.TO_DO)
 	 */
-	public static <T> List<T> convertList(List<? extends AbstractObject> sourceList,
-										  Class<T> targetClazz, Integer cloneDirection) throws Exception {
-		if(sourceList == null) {
-			return null;
+	public static <T> List<T> convertList(List<? extends AbstractObject> sourceList, Class<T> targetClazz, Integer cloneDirection){
+		 if (sourceList == null) {
+			 return null;
 		}
-		List<T> targetList = new ArrayList<T>();
-		for(AbstractObject sourceObject : sourceList) {
-			targetList.add(sourceObject.clone(targetClazz, cloneDirection));
+		List<T > targetList = new ArrayList<T>();
+		try {
+			for (AbstractObject sourceObject : sourceList) {
+				targetList.add(sourceObject.clone(targetClazz, cloneDirection));
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 		return targetList;
 	}
 
 	/**
-	 * 获取属性名数组
+	 * 获取 Class
 	 */
-	public static String[] getFiledName(Class<?> clazz) {
+	public static Class<?> getClass(String className) throws ClassNotFoundException {
+		return Class.forName(className);
+	}
+
+	/**
+	 * 获取 Class 特定名称的属性名
+	 */
+	public static Field getFiled(Class<?> clazz,String fieldName) throws NoSuchFieldException {
+		return clazz.getDeclaredField(fieldName);
+	}
+
+	/**
+	 * 获取 Class 所有属性名(包含父类)
+	 */
+	public static Field[] getFileds(Class<?> clazz) {
 		Field[] fields = clazz.getDeclaredFields();
 		Class<?> superClazz = clazz.getSuperclass();
 		if (!superClazz.equals(clazz)){
@@ -96,6 +117,14 @@ public class SObjectUtil {
 			System.arraycopy(tableSuperFields, 0, superFields, fields.length, tableSuperFields.length);
 			fields = getSuperClassFields(superFields, superClazz);
 		}
+		return fields;
+	}
+
+	/**
+	 * 获取 Class 所有属性名(包含父类)
+	 */
+	public static String[] getFiledsNames(Class<?> clazz) {
+		Field[] fields = getFileds(clazz);
 		String[] fieldNames = new String[fields.length];
 		for(int i=0;i<fields.length;i++){
 			fieldNames[i] = fields[i].getName();
@@ -103,17 +132,17 @@ public class SObjectUtil {
 		return fieldNames;
 	}
 
-	public static String[] getFiledName(Object o){
-		return getFiledName(o.getClass());
+	/**
+	 * 获取对象 所有属性名(包含父类)
+	 */
+	public static String[] getFiledsNames(Object o){
+		return getFiledsNames(o.getClass());
 	}
 
 	/**
-	 * 获取父类的所有字段
-	 * @param tableFields f
-	 * @param clazz c
-	 * @return f
+	 * 获取父类 所有属性名
 	 */
-	private static Field[] getSuperClassFields(Field[] tableFields, Class<?> clazz) {
+	public static Field[] getSuperClassFields(Field[] tableFields, Class<?> clazz) {
 		Class<?> superClazz = clazz.getSuperclass();
 		if (superClazz.equals(Object.class)) {
 			return tableFields;
@@ -127,9 +156,10 @@ public class SObjectUtil {
 	}
 
 	/**
-	 * 根据属性名获取属性值
+	 * 获取对象 值
+	 * ps:Obj=getValueByName("name",bean)=bean.getName()
 	 */
-	public static Object getFieldValueByName(String fieldName, Object o) {
+	public static Object getValueByName(String fieldName, Object o) {
 		try {
 			String firstLetter = fieldName.substring(0, 1).toUpperCase();
 			String getter = "get" + firstLetter + fieldName.substring(1);
@@ -140,7 +170,11 @@ public class SObjectUtil {
 		}
 	}
 
-	public static <T> String getFunctionFiledName(Function<T, ?> fn) {
+	/**
+	 * 获取 lambda 的 Serialized
+	 * @param fn 必须为 Funtion 必须继承 Serializable
+	 */
+	private static <T> SerializedLambda getSerializedLambda(Function<T, ?> fn) {
 		// 从function取出序列化方法
 		Method writeReplaceMethod;
 		try {
@@ -148,7 +182,6 @@ public class SObjectUtil {
 		} catch (NoSuchMethodException e) {
 			throw new RuntimeException(e);
 		}
-
 		// 从序列化方法取出序列化的lambda信息
 		boolean isAccessible = writeReplaceMethod.isAccessible();
 		writeReplaceMethod.setAccessible(true);
@@ -159,27 +192,66 @@ public class SObjectUtil {
 			throw new RuntimeException(e);
 		}
 		writeReplaceMethod.setAccessible(isAccessible);
-		// 从lambda信息取出method、field、class等
+		return serializedLambda;
+	}
+
+	/**
+	 * function 获取 class
+	 * @param fn 必须为 Funtion 必须继承 Serializable
+	 */
+	public static <T> Class<?> getFunctionClass(Function<T, ?> fn) {
+		SerializedLambda serializedLambda = getSerializedLambda(fn);
+		String className = serializedLambda.getImplClass().replace("/", ".");
+		try {
+			return getClass(className);
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	/**
+	 * function 获取 string
+	 * @param fn 必须为 Funtion 必须继承 Serializable
+	 */
+	public static <T> String getFunctionName(Function<T, ?> fn) {
+		SerializedLambda serializedLambda = getSerializedLambda(fn);
 		String fieldName = serializedLambda.getImplMethodName().substring("get".length());
 		fieldName = fieldName.replaceFirst(fieldName.charAt(0) + "", (fieldName.charAt(0) + "").toLowerCase());
+		return fieldName;
+	}
+
+	/**
+	 * function 获取 field
+	 * @param fn 必须为 Funtion 必须继承 Serializable
+	 */
+	public static <T> Field getFunctionFiled(Function<T, ?> fn) {
+		Class<?> clazz = getFunctionClass(fn);
+		String fieldName = getFunctionName(fn);
 		Field field;
 		try {
-			field = Class.forName(serializedLambda.getImplClass().replace("/", ".")).getDeclaredField(fieldName);
-		} catch (ClassNotFoundException | NoSuchFieldException e) {
+			assert clazz != null;
+			field = getFiled(clazz,fieldName);
+		} catch (NoSuchFieldException e) {
 			throw new RuntimeException(e);
 		}
+		return field;
+	}
+
+	/**
+	 * function 字段名
+	 * @param fn 必须为 Funtion 必须继承 Serializable
+	 */
+	public static <T> String getFunctionFiledName(Function<T, ?> fn) {
+		String fieldName = getFunctionName(fn);
 		return fieldName.replaceAll("[A-Z]", "_$0").toLowerCase();
 	}
 
 	/**
-	 * 遍历数组 获取数组中对象某个值 重组成一个新数组
-	 * @param list source list
-	 * @param function 获取的值
-	 * @param <T> source list 里的对象类型
-	 * @param <R> 新数组/获取的值 的对象类型
-	 * @return f
+	 * 获取数组中对象的某个值,重组成一个新数组
+	 * ps: Name-List[String]=foreach(List[T],T::getName)
 	 */
-	public static <T,R>  List<R> foreach(List<T> list, IFunction<T,R> function){
+	public static <T,R>  List<R> foreach(List<T> list, Function<T,R> function){
 		List<R> res = new ArrayList<>();
 		if (SUtil.isBlank(list,function)){
 			return res;
@@ -194,16 +266,18 @@ public class SObjectUtil {
 	}
 
 	/**
-	 * 遍历数组 获取数组中对象某个值==value 将满足条件的对象重组成一个新数组
-	 *
-	 * @param list source list
-	 * @param function 需要判断的字段
-	 * @param values 匹配的值
-	 * @param <T> source list 里的对象类型
-	 * @param <R> 匹配的值 的对象类型
-	 * @return f
+	 * 获取数组中对象的某个值,将满足条件的值,重组成一个新数组
+	 * ps: List[T]=foreachByKey(List[T],T::getName,"someoneName")
 	 */
-	public static <T,R>  List<T> foreachByListKey(List<T> list, IFunction<T,R> function, List<R> values){
+	public static <T,R>  List<T> foreachByKey(List<T> list, Function<T,R> function, R value){
+		return foreachByListKey(list,function, Collections.singletonList(value));
+	}
+
+	/**
+	 * 获取数组中对象的某个值,将满足条件的值,重组成一个新数组
+	 * ps: List[T]=foreachByKey(List[T],T::getName,List[R])
+	 */
+	public static <T,R>  List<T> foreachByListKey(List<T> list, Function<T,R> function, List<R> values){
 		List<T> res = new ArrayList<>();
 		if (SUtil.isBlank(list,function,values)){
 			return res;
@@ -217,9 +291,6 @@ public class SObjectUtil {
 			}
 		}
 		return res;
-	}
-	public static <T,R>  List<T> foreachByKey(List<T> list, IFunction<T,R> function, R value){
-		return foreachByListKey(list,function, Collections.singletonList(value));
 	}
 
 	public enum SETTYPE {
@@ -237,6 +308,9 @@ public class SObjectUtil {
 		UNION
 	}
 
+	/**
+	 * 获取2个数组的差/交/并集
+	 */
 	public static <T> List<T> disposeSetList(List<T> sou1,List<T> sou2,SETTYPE type){
 		switch (type){
 			case UNION: return (List<T>) CollUtil.union(sou1, sou2);
@@ -248,11 +322,6 @@ public class SObjectUtil {
 
 	/**
 	 * 给泛型写入值
-	 * @param object 泛型对象
-	 * @param key key
-	 * @param value 值
-	 * @param <V> 写入值类型
-	 * @param <T> 泛型类型
 	 */
 	@SneakyThrows
 	public static <V,T> void setProperty(T object, String key, V value) {
@@ -269,10 +338,7 @@ public class SObjectUtil {
 	}
 
 	/**
-	 * 获取method set 方法
-	 * @param field f
-	 * @param clazz c
-	 * @return f
+	 * 获取method set/get 方法
 	 */
 	public static Method getMethodByField(Field field, Class<?> clazz , Boolean needSet) {
 		//组织method方法名
@@ -287,5 +353,13 @@ public class SObjectUtil {
 			}
 		}
 		return setFieldMethod;
+	}
+
+	/**
+	 * 数组去重
+	 */
+	public static <T> List<T> outDuplicate(List<T> list){
+		LinkedHashSet<T> temp = new LinkedHashSet<>(list);
+		return new ArrayList<>(temp);
 	}
 }

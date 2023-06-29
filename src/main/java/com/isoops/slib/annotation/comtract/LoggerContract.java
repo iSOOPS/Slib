@@ -29,7 +29,7 @@ import java.util.List;
 public class LoggerContract extends BasicContract {
 
 
-    @Pointcut("@annotation(Logger)")
+    @Pointcut("@annotation(com.isoops.slib.annotation.Logger)")
     public void log() {
     }
 

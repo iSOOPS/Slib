@@ -11,7 +11,7 @@
 
     <groupId>com.isoops</groupId>
     <artifactId>SLib</artifactId>
-    <version>1.0.2-RELEASE</version>
+    <version>1.0.3-RELEASE</version>
     <name>SLib</name>
     <description>Java gen Utils</description>
 
@@ -53,6 +53,16 @@
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-pool2</artifactId>
         </dependency>
+
+
+        <!-- https://mvnrepository.com/artifact/redis.clients/jedis -->
+        <dependency>
+            <groupId>redis.clients</groupId>
+            <artifactId>jedis</artifactId>
+            <version>4.4.2</version>
+        </dependency>
+
+
 
         <dependency>
             <groupId>io.protostuff</groupId>

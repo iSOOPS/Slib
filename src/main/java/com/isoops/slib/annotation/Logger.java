@@ -2,7 +2,6 @@ package com.isoops.slib.annotation;
 
 
 import java.lang.annotation.*;
-import java.lang.reflect.Type;
 
 /**
  * 日志通用注解
