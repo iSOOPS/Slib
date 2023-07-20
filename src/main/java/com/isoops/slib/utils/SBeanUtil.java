@@ -67,10 +67,7 @@ public class SBeanUtil {
                         !annotation.targetName().equals(field.getName())) {
                     originAliasMap.put(annotation.targetName(), value);
                 }
-            } catch (IntrospectionException e) {
-                System.out.println("【源对象】异常:" + field.getName() + "不存在对应的get方法，无法参与拷贝！");
-            } catch (IllegalAccessException | InvocationTargetException e) {
-                System.out.println("【源对象】异常:" + field.getName() + "的get方法执行失败！");
+            } catch (IntrospectionException | IllegalAccessException | InvocationTargetException ignored) {
             }
         }
         if (beanClass.getSuperclass()!=null){
@@ -112,10 +109,7 @@ public class SBeanUtil {
                 if (originAliasMap.get(fieldName)!=null) {
                     method.invoke(targetBean, originAliasMap.get(fieldName));
                 }
-            } catch (IntrospectionException e) {
-                System.out.println("【目标对象】异常:" + field.getName() + "不存在对应的set方法，无法参与拷贝！");
-            } catch (IllegalAccessException | InvocationTargetException e) {
-                System.out.println("【目标对象】异常:" + field.getName() + "的set方法执行失败！");
+            } catch (IntrospectionException | IllegalAccessException | InvocationTargetException ignored) {
             }
         }
         if (beanClass.getSuperclass()!=null) {
