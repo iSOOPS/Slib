@@ -9,7 +9,6 @@ import java.util.Map;
 /**
  * BeanCopier工具类
  * @author Samuel
- *
  */
 public class BeanCopierUtils {
 

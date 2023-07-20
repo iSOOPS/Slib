@@ -6,15 +6,25 @@ import java.util.*;
 
 /**
  *
- * 基于hutool的高频方法进行二次封装
+ * 基于hutool/StringUtils的高频方法进行二次封装
  * @author samuel
+ * *Menu*
+ * @see #isBlank(Object)                        空判断,判断范围:null/size/""
+ * @see #isBlank(Object...)                     空判断,多对象判断,存在空条件
+ * @see #isBlank(Object, IFunction[])           空判断,对象判断,lambok取值
+ * @see #isFullBlank(Object...)                 空判断,多对象判断,全空条件
+ * @see #isFullBlank(Object, IFunction[])       空判断,对象判断,lambok取值,全空条件
+ * @see #isNotBlank(Object)                     非空判断,为{@link #isBlank(Object)}反义
+ * @see #isNotBlank(Object...)                  非空判断,为{@link #isBlank(Object...)}反义
+ * @see #isNotBlank(Object, IFunction[])        非空判断,为{@link #isBlank(Object, IFunction[])}反义
+ * @see #isEqual(Object, IFunction, Object)     相等判断
  */
 public class SUtil {
 
     public static final String EMPTY = "";
 
     /**
-     * object=null / (string="" 且 string=null) / (List=null 且 List.size＜1)
+     * object=null || (string="" 且 string=null) || (List=null 且 List.size＜1) = true
      */
     public static boolean isBlank(Object temp){
         if (temp == null){
@@ -34,13 +44,6 @@ public class SUtil {
     }
 
     /**
-     * object!=null / (string!="" 且 string!=null) / (List!=null 且 List.size≥1)
-     */
-    public static boolean isNotBlank(Object temp){
-        return !isBlank(temp);
-    }
-
-    /**
      * [对象值A!=null || 对象值B=null || 对象值C!=null ...]=true
      * ps:存在一个 null 则为 true
      */
@@ -51,27 +54,6 @@ public class SUtil {
             }
         }
         return false;
-    }
-
-    /**
-     * [对象值A=null || 对象值B=null || 对象值C=null ...]=true
-     * ps:全部 null 则为 true
-     */
-    public static boolean isFullBlank(Object...args){
-        for (Object temp:args){
-            if (isNotBlank(temp)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /**
-     * [对象值A!=null || 对象值B!=null || 对象值C!=null ...]=true
-     * ps:不存在 null 则为 true
-     */
-    public static boolean isNotBlank(Object...args){
-        return !isBlank(args);
     }
 
     /**
@@ -95,6 +77,19 @@ public class SUtil {
     }
 
     /**
+     * [对象值A=null || 对象值B=null || 对象值C=null ...]=true
+     * ps:全部 null 则为 true
+     */
+    public static boolean isFullBlank(Object...args){
+        for (Object temp:args){
+            if (isNotBlank(temp)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
      * 若[对象=null || (对象值A=null 且 对象值B=null 且 对象值C=null ...)]=true
      * ps:对象=null || 全部对象值 null 则为 true
      */
@@ -115,13 +110,28 @@ public class SUtil {
     }
 
     /**
+     * object!=null || (string!="" 且 string!=null) || (List!=null 且 List.size≥1)
+     */
+    public static boolean isNotBlank(Object temp){
+        return !isBlank(temp);
+    }
+
+    /**
+     * [对象值A!=null || 对象值B!=null || 对象值C!=null ...]=true
+     * ps:不存在 null 则为 true
+     */
+    public static boolean isNotBlank(Object...args){
+        return !isBlank(args);
+    }
+
+    /**
      * [对象!=null 且 对象值A!=null 且 对象值B=null 且 对象值C!=null ...]=true
      * ps:全部不能为空
      */
     @SafeVarargs
     public static <T,R> boolean isNotBlank(T object, IFunction<T,R>...args){
-        if (isNotBlank(object)) {
-            return true;
+        if (!isNotBlank(object)) {
+            return false;
         }
         if (args == null || args.length == 0) {
             return false;

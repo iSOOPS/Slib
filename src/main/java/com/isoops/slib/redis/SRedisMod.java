@@ -5,6 +5,7 @@ import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import com.isoops.slib.pojo.AbstractObject;
+import com.isoops.slib.utils.SFieldUtil;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.springframework.stereotype.Component;
@@ -16,9 +17,6 @@ import redis.clients.jedis.providers.PooledConnectionProvider;
 import redis.clients.jedis.search.*;
 import redis.clients.jedis.search.schemafields.SchemaField;
 
-import java.lang.invoke.SerializedLambda;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.*;
 
 @Component
@@ -66,33 +64,9 @@ public class SRedisMod {
         }
 
         private java.lang.reflect.Field getFnField(SFunction<T,?> columnName) {
-            // 从function取出序列化方法
-            Method writeReplaceMethod;
-            try {
-                writeReplaceMethod = columnName.getClass().getDeclaredMethod("writeReplace");
-            } catch (NoSuchMethodException e) {
-                throw new RuntimeException(e);
-            }
-
-            // 从序列化方法取出序列化的lambda信息
-            boolean isAccessible = writeReplaceMethod.isAccessible();
-            writeReplaceMethod.setAccessible(true);
-            SerializedLambda serializedLambda;
-            try {
-                serializedLambda = (SerializedLambda) writeReplaceMethod.invoke(columnName);
-            } catch (IllegalAccessException | InvocationTargetException e) {
-                throw new RuntimeException(e);
-            }
-            writeReplaceMethod.setAccessible(isAccessible);
-
-            // 从lambda信息取出method、field、class等
-            String fieldName = serializedLambda.getImplMethodName().substring("get".length());
-            fieldName = fieldName.replaceFirst(fieldName.charAt(0) + "", (fieldName.charAt(0) + "").toLowerCase());
-            java.lang.reflect.Field field;
-            try {
-                field = Class.forName(serializedLambda.getImplClass().replace("/", ".")).getDeclaredField(fieldName);
-            } catch (ClassNotFoundException | NoSuchFieldException e) {
-                throw new RuntimeException(e);
+            java.lang.reflect.Field field = SFieldUtil.getFunctionFiled(columnName);
+            if (field == null) {
+                throw new RuntimeException("获取function-field失败");
             }
             return field;
         }

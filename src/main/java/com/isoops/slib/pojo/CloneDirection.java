@@ -3,7 +3,6 @@ package com.isoops.slib.pojo;
 /**
  * 克隆方向
  * @author Samuel
- *
  */
 public class CloneDirection {
 
@@ -23,6 +22,25 @@ public class CloneDirection {
 			case 5: return DomainType.DO;
 			case 6: return DomainType.DTO;
 			default: return null;
+		}
+	}
+
+	public static <R> Class<?> getTargetClass(Class<R> clazz , Integer cloneDirection) {
+		// ReflectionDTO
+		String className = clazz.getName();
+		//RO/VO/DO...
+		String domainTag = CloneDirection.toDomain(cloneDirection);
+		if (domainTag == null) {
+			return null;
+		}
+		//是否为DTO 为DTO则截3为,反之2位
+		int sumEndInteger = className.length() - (className.endsWith(DomainType.DTO) ? 3 : 2);
+		//拼接新class名称
+		String cloneTargetClassName = className.substring(0, sumEndInteger) + CloneDirection.toDomain(cloneDirection);
+		try {
+			return Class.forName(cloneTargetClassName);
+		} catch (ClassNotFoundException e) {
+			throw new RuntimeException(e);
 		}
 	}
 

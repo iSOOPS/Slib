@@ -5,7 +5,6 @@ import cn.hutool.core.collection.CollUtil;
 import com.isoops.slib.pojo.AbstractObject;
 import com.isoops.slib.pojo.BeanCopierUtils;
 import lombok.SneakyThrows;
-
 import java.lang.invoke.SerializedLambda;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -21,12 +20,13 @@ import java.util.function.Function;
  * @author Samuel
  *
  */
+@Deprecated
 public class SObjectUtil {
 
 	/**
-	 * 克隆生成
-	 * ps:V=domainClone(T,V.class)
+	 * replace to {@link com.isoops.slib.utils.SBeanUtil#clone(Object, Class)}
 	 */
+	@Deprecated
 	public static <T,V> V domainClone(T domain,Class<V> clazz) {
 		V target = null;
 		try {
@@ -40,9 +40,9 @@ public class SObjectUtil {
 	}
 
 	/**
-	 * 克隆写入
-	 * ps:V=domainClone(T,V)
+	 * replace to {@link com.isoops.slib.utils.SBeanUtil#clone(Object, Object)}
 	 */
+	@Deprecated
 	public static <T,V> V domainClone(T domain,V target) {
 		assert target != null;
 		BeanCopierUtils.copyProperties(domain, target);
@@ -50,9 +50,9 @@ public class SObjectUtil {
 	}
 
 	/**
-	 * 批量克隆写入
-	 * ps:List[K]=convertList(List[T],K.class)
+	 * replace to {@link com.isoops.slib.utils.SBeanUtil#clones(List, Class)}
 	 */
+	@Deprecated
 	@SneakyThrows
 	public static <T,K> List<K> convertList(List<T> sourceList, Class<K> targetClazz) {
 		if(sourceList == null) {
@@ -72,9 +72,9 @@ public class SObjectUtil {
 	}
 
 	/**
-	 * 深度克隆 domain 定向(内部对象也会克隆)
-	 * ps:List[T]=convertList(List[T],T.class,CloneDirection.TO_DO)
+	 * replace to {@link com.isoops.slib.utils.SBeanUtil#clones(List, Class, Integer)}
 	 */
+	@Deprecated
 	public static <T> List<T> convertList(List<? extends AbstractObject> sourceList, Class<T> targetClazz, Integer cloneDirection){
 		 if (sourceList == null) {
 			 return null;
@@ -91,22 +91,25 @@ public class SObjectUtil {
 	}
 
 	/**
-	 * 获取 Class
+	 * Deprecated
 	 */
+	@Deprecated
 	public static Class<?> getClass(String className) throws ClassNotFoundException {
 		return Class.forName(className);
 	}
 
 	/**
-	 * 获取 Class 特定名称的属性名
+	 * Deprecated
 	 */
+	@Deprecated
 	public static Field getFiled(Class<?> clazz,String fieldName) throws NoSuchFieldException {
 		return clazz.getDeclaredField(fieldName);
 	}
 
 	/**
-	 * 获取 Class 所有属性名(包含父类)
+	 * replace to {@link SFieldUtil#getFileds(Class)}
 	 */
+	@Deprecated
 	public static Field[] getFileds(Class<?> clazz) {
 		Field[] fields = clazz.getDeclaredFields();
 		Class<?> superClazz = clazz.getSuperclass();
@@ -121,8 +124,9 @@ public class SObjectUtil {
 	}
 
 	/**
-	 * 获取 Class 所有属性名(包含父类)
+	 * replace to {@link SFieldUtil#getFiledsNames(Class)}
 	 */
+	@Deprecated
 	public static String[] getFiledsNames(Class<?> clazz) {
 		Field[] fields = getFileds(clazz);
 		String[] fieldNames = new String[fields.length];
@@ -133,15 +137,17 @@ public class SObjectUtil {
 	}
 
 	/**
-	 * 获取对象 所有属性名(包含父类)
+	 * Deprecated
 	 */
+	@Deprecated
 	public static String[] getFiledsNames(Object o){
 		return getFiledsNames(o.getClass());
 	}
 
 	/**
-	 * 获取父类 所有属性名
+	 * replace to {@link SFieldUtil#getSuperClassFields(Field[], Class)}
 	 */
+	@Deprecated
 	public static Field[] getSuperClassFields(Field[] tableFields, Class<?> clazz) {
 		Class<?> superClazz = clazz.getSuperclass();
 		if (superClazz.equals(Object.class)) {
@@ -156,9 +162,9 @@ public class SObjectUtil {
 	}
 
 	/**
-	 * 获取对象 值
-	 * ps:Obj=getValueByName("name",bean)=bean.getName()
+	 * Deprecated
 	 */
+	@Deprecated
 	public static Object getValueByName(String fieldName, Object o) {
 		try {
 			String firstLetter = fieldName.substring(0, 1).toUpperCase();
@@ -196,9 +202,9 @@ public class SObjectUtil {
 	}
 
 	/**
-	 * function 获取 class
-	 * @param fn 必须为 Funtion 必须继承 Serializable
+	 * replace to {@link SFieldUtil#getFunctionClass(Function)}
 	 */
+	@Deprecated
 	public static <T> Class<?> getFunctionClass(Function<T, ?> fn) {
 		SerializedLambda serializedLambda = getSerializedLambda(fn);
 		String className = serializedLambda.getImplClass().replace("/", ".");
@@ -211,9 +217,9 @@ public class SObjectUtil {
 	}
 
 	/**
-	 * function 获取 string
-	 * @param fn 必须为 Funtion 必须继承 Serializable
+	 * replace to {@link SFieldUtil#getFunctionName(Function)}
 	 */
+	@Deprecated
 	public static <T> String getFunctionName(Function<T, ?> fn) {
 		SerializedLambda serializedLambda = getSerializedLambda(fn);
 		String fieldName = serializedLambda.getImplMethodName().substring("get".length());
@@ -222,9 +228,9 @@ public class SObjectUtil {
 	}
 
 	/**
-	 * function 获取 field
-	 * @param fn 必须为 Funtion 必须继承 Serializable
+	 * replace to {@link SFieldUtil#getFunctionFiled(Function)}
 	 */
+	@Deprecated
 	public static <T> Field getFunctionFiled(Function<T, ?> fn) {
 		Class<?> clazz = getFunctionClass(fn);
 		String fieldName = getFunctionName(fn);
@@ -239,18 +245,18 @@ public class SObjectUtil {
 	}
 
 	/**
-	 * function 字段名
-	 * @param fn 必须为 Funtion 必须继承 Serializable
+	 * Deprecated
 	 */
+	@Deprecated
 	public static <T> String getFunctionFiledName(Function<T, ?> fn) {
 		String fieldName = getFunctionName(fn);
 		return fieldName.replaceAll("[A-Z]", "_$0").toLowerCase();
 	}
 
 	/**
-	 * 获取数组中对象的某个值,重组成一个新数组
-	 * ps: Name-List[String]=foreach(List[T],T::getName)
+	 * replace to {@link SBeanUtil#foreach(List, Function)}
 	 */
+	@Deprecated
 	public static <T,R>  List<R> foreach(List<T> list, Function<T,R> function){
 		List<R> res = new ArrayList<>();
 		if (SUtil.isBlank(list,function)){
@@ -266,17 +272,17 @@ public class SObjectUtil {
 	}
 
 	/**
-	 * 获取数组中对象的某个值,将满足条件的值,重组成一个新数组
-	 * ps: List[T]=foreachByKey(List[T],T::getName,"someoneName")
+	 * replace to {@link SBeanUtil#foreachByKey(List, Function, Object)}
 	 */
+	@Deprecated
 	public static <T,R>  List<T> foreachByKey(List<T> list, Function<T,R> function, R value){
 		return foreachByListKey(list,function, Collections.singletonList(value));
 	}
 
 	/**
-	 * 获取数组中对象的某个值,将满足条件的值,重组成一个新数组
-	 * ps: List[T]=foreachByKey(List[T],T::getName,List[R])
+	 * replace to {@link SBeanUtil#foreachByListKey(List, Function, List)}
 	 */
+	@Deprecated
 	public static <T,R>  List<T> foreachByListKey(List<T> list, Function<T,R> function, List<R> values){
 		List<T> res = new ArrayList<>();
 		if (SUtil.isBlank(list,function,values)){
@@ -293,6 +299,10 @@ public class SObjectUtil {
 		return res;
 	}
 
+	/**
+	 * replace to {@link SBeanUtil}
+	 */
+	@Deprecated
 	public enum SETTYPE {
 		/**
 		 * 差集
@@ -309,8 +319,9 @@ public class SObjectUtil {
 	}
 
 	/**
-	 * 获取2个数组的差/交/并集
+	 * replace to {@link SBeanUtil#disposeSetList(List, List, com.isoops.slib.utils.SBeanUtil.SETTYPE)}
 	 */
+	@Deprecated
 	public static <T> List<T> disposeSetList(List<T> sou1,List<T> sou2,SETTYPE type){
 		switch (type){
 			case UNION: return (List<T>) CollUtil.union(sou1, sou2);
@@ -321,8 +332,9 @@ public class SObjectUtil {
 	}
 
 	/**
-	 * 给泛型写入值
+	 * replace to {@link SFieldUtil#setProperty(Object, String, Object)}
 	 */
+	@Deprecated
 	@SneakyThrows
 	public static <V,T> void setProperty(T object, String key, V value) {
 		Class<?> thisClazz = object.getClass();
@@ -338,8 +350,9 @@ public class SObjectUtil {
 	}
 
 	/**
-	 * 获取method set/get 方法
+	 * replace to {@link SFieldUtil#getMethodByField(Field, Class, Boolean)}
 	 */
+	@Deprecated
 	public static Method getMethodByField(Field field, Class<?> clazz , Boolean needSet) {
 		//组织method方法名
 		String keyName = field.getName();
@@ -356,10 +369,16 @@ public class SObjectUtil {
 	}
 
 	/**
-	 * 数组去重
+	 * replace to {@link SBeanUtil#outDuplicate(List)}
 	 */
+	@Deprecated
 	public static <T> List<T> outDuplicate(List<T> list){
 		LinkedHashSet<T> temp = new LinkedHashSet<>(list);
 		return new ArrayList<>(temp);
+	}
+
+	private void test() {
+		SBeanUtil.outDuplicate(new ArrayList<>());
+		SFieldUtil.getFileds(SFieldUtil.class);
 	}
 }

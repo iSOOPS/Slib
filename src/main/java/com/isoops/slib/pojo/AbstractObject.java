@@ -1,6 +1,7 @@
 package com.isoops.slib.pojo;
 
-import com.isoops.slib.utils.SObjectUtil;
+import com.isoops.slib.utils.SBeanUtil;
+import com.isoops.slib.utils.SFieldUtil;
 import lombok.Data;
 
 import java.lang.reflect.Field;
@@ -22,25 +23,39 @@ public class AbstractObject {
 	 * 给泛型写入一个值
 	 * @param key 字段名称
 	 * @param value 值
-	 * @param <V> 字段泛型
 	 */
-	public <V> void apply(String key,V value) {
-		SObjectUtil.setProperty(this,key,value);
+	public void apply(String key,Object value) {
+		SFieldUtil.setProperty(this,key,value);
 	}
 
 	/**
 	 * 浅度克隆
 	 */
 	public <T> T clone(Class<T> clazz) {
-		return SObjectUtil.domainClone(this,clazz);
+		return SBeanUtil.clone(this,clazz);
 	}
 
 	/**
 	 * 浅度克隆
 	 */
 	public <T> T clone(T target) {
-		return SObjectUtil.domainClone(this,target);
+		return SBeanUtil.clone(this,target);
 	}
+
+	/**
+	 * 别名克隆
+	 */
+	public <T> T aliasClone(Class<T> clazz) {
+		return SBeanUtil.aliasClone(this,clazz);
+	}
+
+	/**
+	 * 别名克隆
+	 */
+	public <T> T aliasClone(T target) {
+		return SBeanUtil.aliasClone(this,target);
+	}
+
 
 	/**
 	 * 深度克隆/递归所有内部对象
@@ -60,8 +75,9 @@ public class AbstractObject {
 				V nowObject = (V) field.get(this);
 				Class<?> listGenericClazz = getListGenericType(field);
 				assert listGenericClazz != null;
-				Class<?> cloneTargetClazz = getCloneTargetClazz(listGenericClazz, cloneDirection);
-				Method setFieldMethod = SObjectUtil.getMethodByField(field, clazz , true);
+				Class<?> cloneTargetClazz = CloneDirection.getTargetClass(listGenericClazz, cloneDirection);
+				Method setFieldMethod = SFieldUtil.getMethodByField(field, clazz , true);
+				assert cloneTargetClazz != null;
 				setFieldMethod.invoke(target, nowObject.clone(cloneTargetClazz,cloneDirection));
 			}
 			// 如果判断某个字段是List类型的
@@ -79,15 +95,15 @@ public class AbstractObject {
 				// 获取要克隆的目标类型
 				// 假设CloneDirection是反向，此时获取到的就是RelationVO
 				assert listGenericClazz != null;
-				Class<?> cloneTargetClazz = getCloneTargetClazz(listGenericClazz, cloneDirection);
+				Class<?> cloneTargetClazz = CloneDirection.getTargetClass(listGenericClazz, cloneDirection);
 				// 将list集合克隆到目标list集合中去
-				List<? extends AbstractObject> clonedList = SObjectUtil.convertList(
+				List<? extends AbstractObject> clonedList = SBeanUtil.clones(
 						list,
 						(Class<? extends AbstractObject>)cloneTargetClazz,
 						cloneDirection);
 				// 获取设置克隆好的list的方法名称
 				// setRelations
-				Method setFieldMethod = SObjectUtil.getMethodByField(field, clazz ,true);
+				Method setFieldMethod = SFieldUtil.getMethodByField(field, clazz ,true);
 				setFieldMethod.invoke(target, clonedList);
 				// target是CategoryVO对象，此时就是调用CategoryVO的setRelations方法，
 				// 将克隆好的List<CategoryVO>给设置进去
@@ -108,24 +124,6 @@ public class AbstractObject {
             return (Class<?>)parameterizedType.getActualTypeArguments()[0];
         }
         return null;
-	}
-
-	/**
-	 * 获取目标类名
-	 */
-	private Class<?> getCloneTargetClazz(Class<?> clazz, Integer cloneDirection) throws Exception {
-		// ReflectionDTO
-		String className = clazz.getName();
-		//RO/VO/DO...
-		String domainName = CloneDirection.toDomain(cloneDirection);
-		if (domainName == null) {
-			return clazz;
-		}
-		//是否为DTO
-		int sumEndInteger = className.length() - (className.endsWith(DomainType.DTO) ? 3 : 2);
-		//拼接新class名称
-		String cloneTargetClassName = className.substring(0, sumEndInteger) + CloneDirection.toDomain(cloneDirection);
-		return Class.forName(cloneTargetClassName);
 	}
 
 	public static Boolean isAbstractObject(Class<?> clazz) {

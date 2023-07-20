@@ -3,22 +3,27 @@ package com.isoops.slib.support;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
-import com.isoops.slib.pojo.IFunction;
-import com.isoops.slib.utils.SObjectUtil;
+import com.isoops.slib.utils.SBeanUtil;
+import com.isoops.slib.utils.SFieldUtil;
 import com.isoops.slib.utils.SUtil;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * DAO层,MybatisPlus通用实现方法
  * @author samuel
+ * *Menu*
+ * @see #querys(SFunction, List, SFunction[])       单字段查询,多数据匹配
+ * @see #query(SFunction, Object, SFunction[])      单字段查询,单数据匹配
+ * @see #queryPage(Object, List, SFunction[])       分页查询
  */
 public class SuperDaoServiceImpl {
 
     /**
-     * 单字段查询
+     * 单字段查询,多数据匹配
      * @param column 字段Func
      * @param vals 字段值(单个则为eq,多个则为in)
      * @param gets 需要获取的字段
@@ -43,7 +48,7 @@ public class SuperDaoServiceImpl {
     }
 
     /**
-     * 单字段查询
+     * 单字段查询,单数据匹配
      * @param column 字段Func
      * @param val 字段值
      * @param gets 需要获取的字段
@@ -73,19 +78,29 @@ public class SuperDaoServiceImpl {
     @SafeVarargs
     protected final <T> QueryWrapper<T> queryPage(T val, List<SFunction<T, ?>> likeColumns, SFunction<T, ?>... gets) {
 
-        String[] filedNames = SObjectUtil.getFiledsNames(val);
+        String[] filedNames = SFieldUtil.getFiledsNames(val.getClass());
         List<String> likeColumnString = new ArrayList<>();
         for (SFunction<T, ?> fn : likeColumns) {
-            String cn = SObjectUtil.getFunctionFiledName(fn);
-            likeColumnString.add(cn);
+            String funcName = SFieldUtil.getFunctionName(fn);
+            likeColumnString.add(StrUtil.toUnderlineCase(funcName));
         }
-        List<String> eqFiled = SObjectUtil.disposeSetList(Arrays.asList(filedNames),likeColumnString, SObjectUtil.SETTYPE.DISJUNCTION);
+        List<String> eqFiled = SBeanUtil.disposeSetList(Arrays.asList(filedNames),likeColumnString, SBeanUtil.SETTYPE.DISJUNCTION);
 
         QueryWrapper<T> queryWrapper = new QueryWrapper<>();
 
         Map<String,Object> queryMap = new HashMap<>();
         for (String filed : eqFiled) {
-            Object object = SObjectUtil.getValueByName(filed,val);
+            Field field = SFieldUtil.getFiled(val.getClass(),filed);
+            if (field == null) {
+                continue;
+            }
+            Method method = SFieldUtil.getMethodByField(field,val.getClass(),true);
+            Object object;
+            try {
+                object = method.invoke(val);
+            } catch (IllegalAccessException | InvocationTargetException e) {
+                throw new RuntimeException(e);
+            }
             if (object != null && !"transMap".equals(filed)) {
                 queryMap.put(StrUtil.toCamelCase(filed),object);
             }
