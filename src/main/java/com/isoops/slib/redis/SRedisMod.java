@@ -2,12 +2,13 @@ package com.isoops.slib.redis;
 
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.StrUtil;
-import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
+import com.google.gson.Gson;
 import com.isoops.slib.pojo.AbstractObject;
 import com.isoops.slib.utils.SFieldUtil;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.SneakyThrows;
 import org.springframework.stereotype.Component;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.UnifiedJedis;
@@ -26,12 +27,12 @@ public class SRedisMod {
     @EqualsAndHashCode(callSuper = true)
     @Data
     public static class CustomPO extends AbstractObject {
-        private Long rsdId;
+        private String rsdId;
         public CustomPO() {
-            setRsdId(IdUtil.getSnowflakeNextId());
+            setRsdId(String.valueOf(IdUtil.getSnowflakeNextId()));
         }
         public String toJson() {
-            return JSON.toJSONString(this);
+            return new Gson().toJson(this);
         }
     }
 
@@ -304,7 +305,7 @@ public class SRedisMod {
      * @param <T> CustomPO类型子对象
      * @return f
      */
-    public <T extends CustomPO> Long jsonvSet(UnifiedJedis client,
+    public <T extends CustomPO> String jsonvSet(UnifiedJedis client,
                                               String virtualKey,
                                               T object) {
         return jsonSet(client,merge(virtualKey,object.getRsdId()),object);
@@ -318,7 +319,7 @@ public class SRedisMod {
      * @param <T> CustomPO类型子对象
      * @return f
      */
-    public <T extends CustomPO> Long jsonSet(UnifiedJedis client,
+    public <T extends CustomPO> String jsonSet(UnifiedJedis client,
                                              String realKey,
                                              T object) {
         client.jsonSetWithEscape(realKey,Path2.ROOT_PATH,object);
@@ -373,6 +374,7 @@ public class SRedisMod {
      * @param <T> CustomPO类型子对象
      * @return f
      */
+    @SneakyThrows
     public <T extends CustomPO> List<T> ftSearch(UnifiedJedis client,
                                                  Class<T> clazz,
                                                  String index,
@@ -382,7 +384,7 @@ public class SRedisMod {
         for (Document record : results.getDocuments()) {
             Object object = record.get(Path2.ROOT_PATH.toString());
             String jsonString = (String) object;
-            T bean = JSON.parseObject(jsonString,clazz);
+            T bean = new Gson().fromJson(jsonString,clazz);
             beans.add(bean);
         }
         return beans;

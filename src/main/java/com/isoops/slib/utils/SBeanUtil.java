@@ -263,6 +263,9 @@ public class SBeanUtil {
         List<T> res = new ArrayList<>();
         for (T object : list){
             R r = function.apply(object);
+            if (SUtil.isBlank(r)){
+                continue;
+            }
             for (R r1 : values){
                 if (r.equals(r1)){
                     res.add(object);
