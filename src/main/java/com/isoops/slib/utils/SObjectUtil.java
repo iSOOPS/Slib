@@ -343,7 +343,9 @@ public class SObjectUtil {
 			field.setAccessible(true);
 			if (field.getName().equals(key)) {
 				Method setFieldMethod = getMethodByField(field, thisClazz ,true);
-				setFieldMethod.invoke(object, value);
+				if (setFieldMethod!=null) {
+					setFieldMethod.invoke(object, value);
+				}
 				break;
 			}
 		}

@@ -1,6 +1,7 @@
 package com.isoops.slib.utils;
 
 import com.isoops.slib.pojo.IFunction;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import java.util.*;
 
@@ -19,6 +20,7 @@ import java.util.*;
  * @see #isNotBlank(Object, IFunction[])        非空判断,为{@link #isBlank(Object, IFunction[])}反义
  * @see #isEqual(Object, IFunction, Object)     相等判断
  */
+
 public class SUtil {
 
     public static final String EMPTY = "";
@@ -156,6 +158,5 @@ public class SUtil {
         }
         return func.apply(object).equals(value);
     }
-
 
 }

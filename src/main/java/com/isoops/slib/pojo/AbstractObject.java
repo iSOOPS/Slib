@@ -77,8 +77,10 @@ public class AbstractObject {
 				assert listGenericClazz != null;
 				Class<?> cloneTargetClazz = CloneDirection.getTargetClass(listGenericClazz, cloneDirection);
 				Method setFieldMethod = SFieldUtil.getMethodByField(field, clazz , true);
-				assert cloneTargetClazz != null;
-				setFieldMethod.invoke(target, nowObject.clone(cloneTargetClazz,cloneDirection));
+				if (setFieldMethod != null) {
+					assert cloneTargetClazz != null;
+					setFieldMethod.invoke(target, nowObject.clone(cloneTargetClazz,cloneDirection));
+				}
 			}
 			// 如果判断某个字段是List类型的
 			// field = private List<Relation> relations;
@@ -104,7 +106,9 @@ public class AbstractObject {
 				// 获取设置克隆好的list的方法名称
 				// setRelations
 				Method setFieldMethod = SFieldUtil.getMethodByField(field, clazz ,true);
-				setFieldMethod.invoke(target, clonedList);
+				if (setFieldMethod!=null) {
+					setFieldMethod.invoke(target, clonedList);
+				}
 				// target是CategoryVO对象，此时就是调用CategoryVO的setRelations方法，
 				// 将克隆好的List<CategoryVO>给设置进去
 			}

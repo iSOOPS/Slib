@@ -185,6 +185,7 @@
             <artifactId>maven-assembly-plugin</artifactId>
             <version>3.5.0</version>
         </dependency>
+
     </dependencies>
 
 

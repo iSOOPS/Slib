@@ -29,6 +29,8 @@ import java.util.function.Function;
  * @see #foreach(List, Function)                    数组重组,指定数组里对象的某一个feild,取出重组一个数组
  * @see #foreachByKey(List, Function, Object)       数组重组,获取数组中对象的某个值,将满足条件的值,重组成一个新数组
  * @see #foreachByListKey(List, Function, List)     数组重组,获取数组中对象的某个值,将满足条件的值,重组成一个新数组
+ * @see #foreachByNotKey(List, Function, Object)    数组重组,获取数组中对象的某个值,将满足条件的值,重组成一个新数组
+ * @see #foreachByListNotKey(List, Function, List)  数组重组,获取数组中对象的某个值,将满足条件的值,重组成一个新数组
  *
  * @see #disposeSetList(List, List, SETTYPE)        数组重组,获取2个数组的差/交/并集
  * @see #outDuplicate(List)                         数组重组,数组去重
@@ -115,6 +117,28 @@ public class SBeanUtil {
         if (beanClass.getSuperclass()!=null) {
             settingTargetFieldWithValue(targetBean, beanClass.getSuperclass(), originMap, originAliasMap);
         }
+    }
+
+    public static <T,R>  List<T> foreachCustom(List<T> list,
+                                               Function<T,R> function,
+                                               List<R> values,
+                                               Boolean isEquals){
+        if (SUtil.isBlank(list,function,values)){
+            return new ArrayList<>();
+        }
+        List<T> res = new ArrayList<>();
+        for (T object : list){
+            R r = function.apply(object);
+            if (SUtil.isBlank(r)){
+                continue;
+            }
+            for (R r1 : values){
+                if ((isEquals && r.equals(r1)) || (!isEquals && !r.equals(r1))) {
+                    res.add(object);
+                }
+            }
+        }
+        return res;
     }
 
 
@@ -248,7 +272,7 @@ public class SBeanUtil {
      * desc: 获取数组中对象的某个值,将满足条件的值,重组成一个新数组
      */
     public static <T,R>  List<T> foreachByKey(List<T> list, Function<T,R> function, R value){
-        return foreachByListKey(list,function, Collections.singletonList(value));
+        return foreachCustom(list,function, Collections.singletonList(value),true);
     }
 
     /**
@@ -257,22 +281,25 @@ public class SBeanUtil {
      * desc: 获取数组中对象的某个值,将满足条件的值,重组成一个新数组
      */
     public static <T,R>  List<T> foreachByListKey(List<T> list, Function<T,R> function, List<R> values){
-        if (SUtil.isBlank(list,function,values)){
-            return new ArrayList<>();
-        }
-        List<T> res = new ArrayList<>();
-        for (T object : list){
-            R r = function.apply(object);
-            if (SUtil.isBlank(r)){
-                continue;
-            }
-            for (R r1 : values){
-                if (r.equals(r1)){
-                    res.add(object);
-                }
-            }
-        }
-        return res;
+        return foreachCustom(list,function,values,true);
+    }
+
+    /**
+     * 重组数组
+     * example: List[T]=foreachByKey(List[T],T::R,R)
+     * desc: 获取数组中对象的某个值,将满足条件的值,重组成一个新数组
+     */
+    public static <T,R>  List<T> foreachByNotKey(List<T> list, Function<T,R> function, R value){
+        return foreachCustom(list,function, Collections.singletonList(value),false);
+    }
+
+    /**
+     * 重组数组
+     * example: List[T]=foreachByKey(List[T],T::R,List[R])
+     * desc: 获取数组中对象的某个值,将满足条件的值,重组成一个新数组
+     */
+    public static <T,R>  List<T> foreachByListNotKey(List<T> list, Function<T,R> function, List<R> values){
+        return foreachCustom(list,function,values,false);
     }
 
     public enum SETTYPE {

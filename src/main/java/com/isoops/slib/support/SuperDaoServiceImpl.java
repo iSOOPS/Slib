@@ -94,7 +94,10 @@ public class SuperDaoServiceImpl {
             if (field == null) {
                 continue;
             }
-            Method method = SFieldUtil.getMethodByField(field,val.getClass(),true);
+            Method method = SFieldUtil.getMethodByField(field,val.getClass(),false);
+            if (method == null) {
+                continue;
+            }
             Object object;
             try {
                 object = method.invoke(val);
@@ -102,7 +105,7 @@ public class SuperDaoServiceImpl {
                 throw new RuntimeException(e);
             }
             if (object != null && !"transMap".equals(filed)) {
-                queryMap.put(StrUtil.toCamelCase(filed),object);
+                queryMap.put(StrUtil.toUnderlineCase(filed),object);
             }
         }
         queryWrapper.allEq(queryMap,true);

@@ -135,6 +135,9 @@ public class SFieldUtil {
             field.setAccessible(true);
             if (field.getName().equals(key)) {
                 Method setFieldMethod = getMethodByField(field, thisClazz ,true);
+                if (setFieldMethod == null) {
+                    continue;
+                }
                 try {
                     setFieldMethod.invoke(object, value);
                 } catch (IllegalAccessException | InvocationTargetException e) {
@@ -149,11 +152,12 @@ public class SFieldUtil {
      * 获取method set/get 方法
      */
     public static Method getMethodByField(Field field, Class<?> clazz , Boolean needSet) {
+        PropertyDescriptor descriptor;
         try {
-            PropertyDescriptor descriptor = new PropertyDescriptor(field.getName(), clazz);
-            return needSet ? descriptor.getWriteMethod() : descriptor.getReadMethod();
+            descriptor = new PropertyDescriptor(field.getName(), clazz);
         } catch (IntrospectionException e) {
-            throw new RuntimeException(e);
+            return null;
         }
+        return needSet ? descriptor.getWriteMethod() : descriptor.getReadMethod();
     }
 }
