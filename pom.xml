@@ -11,7 +11,7 @@
 
     <groupId>com.isoops</groupId>
     <artifactId>SLib</artifactId>
-    <version>1.1.0-RELEASE</version>
+    <version>1.1.1-RELEASE</version>
     <name>SLib</name>
     <description>Java gen Utils</description>
 
@@ -22,7 +22,7 @@
         <commons.configuration.version>1.10</commons.configuration.version>
         <fastjson.version>2.0.26</fastjson.version>
         <lombok.version>1.18.26</lombok.version>
-        <hutool.version>5.8.16</hutool.version>
+        <hutool.version>5.8.4</hutool.version>
         <pagehelper.spring.boot.version>1.4.6</pagehelper.spring.boot.version>
         <aspectjweaver.version>1.9.19</aspectjweaver.version>
         <servlet.version>4.0.1</servlet.version>

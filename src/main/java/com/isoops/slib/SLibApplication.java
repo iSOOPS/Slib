@@ -1,15 +1,11 @@
 package com.isoops.slib;
 
-import cn.hutool.core.bean.copier.BeanCopier;
-import com.alibaba.fastjson.JSON;
 import com.isoops.slib.pojo.AbstractObject;
-import com.isoops.slib.utils.SBeanUtil;
+import com.isoops.slib.utils.SLog;
+import com.isoops.slib.utils.SUtil;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * @author samuel
@@ -39,15 +35,12 @@ public class SLibApplication {
 //        SpringApplication.run(SLibApplication.class, args);
         TestAAA aaa = new TestAAA();
 
-        String jsonString = JSON.toJSONString(aaa);
-        Map<String,String> map = JSON.parseObject(jsonString, Map.class);
-//        map.keySet().removeIf("name"::equals);
+        aaa = null;
 
-        Map<String, String> map111 = BeanCopier.create(aaa, new HashMap<String, String>(),null).copy();
-
-
-        TestBBB bbb = SBeanUtil.clone(aaa,TestBBB.class);
-        System.out.println(bbb);
+        if (SUtil.isNotBlank(aaa,TestAAA::getName)) {
+            SLog.info("1111");
+        }
+        SLog.info("222");
     }
 
 }
