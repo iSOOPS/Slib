@@ -13,17 +13,19 @@ import java.util.function.Function;
 /**
  * 封装处理Class/Feild/Function的常用方法
  * @author samuel
- * *Menu*
- * @see #getFiled(Class, String)                    获取 Class 特定名称的属性名
- * @see #getFileds(Class)                           获取 Class 所有属性(包含父类)
- * @see #getFiledsNames(Class)                      获取 Class 所有属性名(包含父类)
- * @see #getSuperClassFields(Field[], Class)        获取 Class 父类所有属性名
  *
- * @see #getFunctionClass(Function)                 获取 Class
- * @see #getFunctionName(Function)                  获取 field-string
- * @see #getFunctionFiled(Function)                 获取 field-string
- * @see #setProperty(Object, String, Object)        给泛型写入值
- * @see #getMethodByField(Field, Class, Boolean)    获取method set/get 方法
+ * @see #getFiled(Class, String)                    getFiled            获取 Class 特定名称的属性名
+ * @see #getFileds(Class)                           getFileds           获取 Class 所有属性(包含父类)
+ * @see #getFiledsNames(Class)                      getFiledsNames      获取 Class 所有属性名(包含父类)
+ * @see #getSuperClassFields(Field[], Class)        getSuperClassFields 获取 Class 父类所有属性名
+ *
+ * @see #getFunctionClass(Function)                 getFunctionClass    获取 Class
+ * @see #getFunctionName(Function)                  getFunctionName     获取 field-string
+ * @see #getFunctionFiled(Function)                 getFunctionFiled    获取 field-string
+ * @see #setProperty(Object, String, Object)        setProperty         给泛型写入值
+ * @see #getMethodByField(Field, Class, Boolean)    getMethodByField    获取method set/get 方法
+ * @see #doObjectByMethod(Method, Object)           doObjectByMethod    通过获取method后取/存值
+ *
  */
 public class SFieldUtil {
 
@@ -160,4 +162,33 @@ public class SFieldUtil {
         }
         return needSet ? descriptor.getWriteMethod() : descriptor.getReadMethod();
     }
+
+    /**
+     * 通过获取method后取/存值
+     */
+    public static Object doObjectByMethod(Method method,Object object) {
+        if (method == null) {
+            return null;
+        }
+        try {
+            return method.invoke(object);
+        } catch (IllegalAccessException | InvocationTargetException e) {
+            SLog.warn("SLib Error:[SFieldUtil.doObjectByMethod]",e.getMessage());
+            return null;
+        }
+    }
+
+    public static void doObjectByMethod(Method method,Object object,Object toObejct) {
+        if (method == null) {
+            return;
+        }
+        try {
+            //获取值
+            method.invoke(object,toObejct);
+        } catch (IllegalAccessException | InvocationTargetException e) {
+            SLog.warn("SLib Error:[SFieldUtil.doObjectByMethod]",e.getMessage());
+        }
+    }
+
+
 }

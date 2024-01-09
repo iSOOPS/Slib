@@ -1,24 +1,24 @@
 package com.isoops.slib.utils;
 
 import com.isoops.slib.pojo.IFunction;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import java.util.*;
+
+import java.util.List;
 
 /**
  *
  * 基于hutool/StringUtils的高频方法进行二次封装
  * @author samuel
- * *Menu*
- * @see #isBlank(Object)                        空判断,判断范围:null/size/""
- * @see #isBlank(Object...)                     空判断,多对象判断,存在空条件
- * @see #isBlank(Object, IFunction[])           空判断,对象判断,lambok取值
- * @see #isFullBlank(Object...)                 空判断,多对象判断,全空条件
- * @see #isFullBlank(Object, IFunction[])       空判断,对象判断,lambok取值,全空条件
- * @see #isNotBlank(Object)                     非空判断,为{@link #isBlank(Object)}反义
- * @see #isNotBlank(Object...)                  非空判断,为{@link #isBlank(Object...)}反义
- * @see #isNotBlank(Object, IFunction[])        非空判断,为{@link #isBlank(Object, IFunction[])}反义
- * @see #isEqual(Object, IFunction, Object)     相等判断
+ *
+ * @see #isBlank(Object)                        isBlank     空判断,判断范围:null/size/""
+ * @see #isBlank(Object...)                     isBlank     空判断,多对象判断,存在空条件
+ * @see #isBlank(Object, IFunction[])           isBlank     空判断,对象判断,lambok取值
+ * @see #isFullBlank(Object...)                 isFullBlank 空判断,多对象判断,全空条件
+ * @see #isFullBlank(Object, IFunction[])       isFullBlank 空判断,对象判断,lambok取值,全空条件
+ * @see #isNotBlank(Object)                     isNotBlank  非空判断,为{@link #isBlank(Object)}反义
+ * @see #isNotBlank(Object...)                  isNotBlank  非空判断,为{@link #isBlank(Object...)}反义
+ * @see #isNotBlank(Object, IFunction[])        isNotBlank  非空判断,为{@link #isBlank(Object, IFunction[])}反义
+ * @see #isEqual(Object, IFunction, Object)     isEqual     相等判断
  */
 
 public class SUtil {

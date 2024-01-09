@@ -9,12 +9,12 @@ import java.util.Calendar;
  * 身份证操作工具
  * @author samuel
  * *Menu*
- * @see #getAge(String)             通过身份证获取年龄
- * @see #getBirthDay(String)        通过身份证获取出生日期
- * @see #getSex(String)             通过身份证获取性别
- * @see #isIdCard(String)           检测是否为身份证
- * @see #changeCard15To18(String)   将 15位身份证号码转为 18位身份证号码
- * @see #changeCard18To15(String)   将 18位身份证号码转为 15位身份证号码
+ * @see #getAge(String)             getAge              通过身份证获取年龄
+ * @see #getBirthDay(String)        getBirthDay         通过身份证获取出生日期
+ * @see #getSex(String)             getSex              通过身份证获取性别
+ * @see #isIdCard(String)           isIdCard            检测是否为身份证
+ * @see #changeCard15To18(String)   changeCard15To18    将15位身份证号码转为 18位身份证号码
+ * @see #changeCard18To15(String)   changeCard18To15    将18位身份证号码转为 15位身份证号码
  */
 public class SIdCardUtil {
 

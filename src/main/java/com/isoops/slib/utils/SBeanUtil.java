@@ -2,122 +2,36 @@ package com.isoops.slib.utils;
 
 import cn.hutool.core.collection.CollUtil;
 import com.isoops.slib.annotation.SFieldAlias;
+import com.isoops.slib.common.SAliasBeanBasic;
 import com.isoops.slib.pojo.AbstractObject;
 import com.isoops.slib.pojo.BeanCopierUtils;
 
-import java.beans.IntrospectionException;
-import java.beans.PropertyDescriptor;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.*;
 import java.util.function.Function;
 
 /**
  * 对象操作工具类 Clone/List操作等 适用与DDD转化
  * @author samuel
- * *Menu*
- * @see #clone(Object, Object)                      克隆,对象与对象
- * @see #clone(Object, Class)                       克隆,复制克隆
- * @see #clones(List, Class)                        克隆,复制克隆
- * @see #clones(List, Class, Integer)               克隆,Domain定向深克隆,类型见{@link com.isoops.slib.pojo.CloneDirection}
- * @see #aliasClone(Object, Object)                 别名克隆,对象与对象,支持克隆对象增加别名注解{@link SFieldAlias}
- * @see #aliasClone(Object, Class)                  别名克隆,复制克隆,支持克隆对象增加别名注解{@link SFieldAlias}
- * @see #aliasClones(List, Class)                   别名克隆,对象与对象,支持克隆对象增加别名注解{@link SFieldAlias}
- * @see #methodOfAlias(Object, Object)              别名操作,仅操作注解的别名复制
  *
- * @see #foreach(List, Function)                    数组重组,指定数组里对象的某一个feild,取出重组一个数组
- * @see #foreachByKey(List, Function, Object)       数组重组,获取数组中对象的某个值,将满足条件的值,重组成一个新数组
- * @see #foreachByListKey(List, Function, List)     数组重组,获取数组中对象的某个值,将满足条件的值,重组成一个新数组
- * @see #foreachByNotKey(List, Function, Object)    数组重组,获取数组中对象的某个值,将满足条件的值,重组成一个新数组
- * @see #foreachByListNotKey(List, Function, List)  数组重组,获取数组中对象的某个值,将满足条件的值,重组成一个新数组
+ * @see #clone(Object, Object)                      clone               克隆,对象与对象
+ * @see #clone(Object, Class)                       clone               克隆,复制克隆
+ * @see #clones(List, Class)                        clones              克隆,复制克隆
+ * @see #clones(List, Class, Integer)               clones              克隆,Domain定向深克隆,类型见{@link com.isoops.slib.pojo.CloneDirection}
+ * @see #aliasClone(Object, Object)                 aliasClone          别名克隆,对象与对象,支持克隆对象增加别名注解{@link SFieldAlias}
+ * @see #aliasClone(Object, Class)                  aliasClone          别名克隆,复制克隆,支持克隆对象增加别名注解{@link SFieldAlias}
+ * @see #aliasClones(List, Class)                   aliasClones         别名克隆,对象与对象,支持克隆对象增加别名注解{@link SFieldAlias}
+ * @see #methodOfAlias(Object, Object)              methodOfAlias       别名操作,仅操作注解的别名复制
  *
- * @see #disposeSetList(List, List, SETTYPE)        数组重组,获取2个数组的差/交/并集
- * @see #outDuplicate(List)                         数组重组,数组去重
+ * @see #foreach(List, Function)                    foreach             数组重组,指定数组里对象的某一个feild,取出重组一个数组
+ * @see #foreachByKey(List, Function, Object)       foreachByKey        数组重组,获取数组中对象的某个值,将满足条件的值,重组成一个新数组
+ * @see #foreachByListKey(List, Function, List)     foreachByListKey    数组重组,获取数组中对象的某个值,将满足条件的值,重组成一个新数组
+ * @see #foreachByNotKey(List, Function, Object)    foreachByNotKey     数组重组,获取数组中对象的某个值,将满足条件的值,重组成一个新数组
+ * @see #foreachByListNotKey(List, Function, List)  foreachByListNotKey 数组重组,获取数组中对象的某个值,将满足条件的值,重组成一个新数组
+ *
+ * @see #disposeSetList(List, List, SETTYPE)        disposeSetList      数组重组,获取2个数组的差/交/并集
+ * @see #outDuplicate(List)                         outDuplicate        数组重组,数组去重
  */
-public class SBeanUtil {
-
-    private static <T> T createTarget(Class<T> clazz) {
-        T target = null;
-        try {
-            target = clazz.getDeclaredConstructor().newInstance();
-        } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-            e.printStackTrace();
-        }
-        return target;
-    }
-
-    private static void generateOriginFieldWithValue(Object originBean,
-                                                     Class<?> beanClass,
-                                                     Map<String, Object> originMap,
-                                                     Map<String, Object> originAliasMap) {
-        Field[] originFieldList = beanClass.getDeclaredFields();
-        for (Field field : originFieldList) {
-            try {
-                //初始化属性描述器
-                PropertyDescriptor propertyDescriptor = new PropertyDescriptor(field.getName(), beanClass);
-                //获取当前属性的get方法
-                Method method = propertyDescriptor.getReadMethod();
-                //获取值
-                Object value = method.invoke(originBean);
-                //存储值
-                originMap.put(field.getName(), value);
-                //获取注解别名
-                SFieldAlias annotation = field.getAnnotation(SFieldAlias.class);
-                if (annotation != null &&
-                        annotation.targetName()!=null && annotation.targetName()!="" &&
-                        !annotation.targetName().equals(field.getName())) {
-                    originAliasMap.put(annotation.targetName(), value);
-                }
-            } catch (IntrospectionException | IllegalAccessException | InvocationTargetException ignored) {
-            }
-        }
-        if (beanClass.getSuperclass()!=null){
-            //生成超类 属性-value
-            generateOriginFieldWithValue(originBean, beanClass.getSuperclass(), originMap, originAliasMap);
-        }
-    }
-
-    private static void settingTargetFieldWithValue(Object targetBean,
-                                                    Class<?> beanClass,
-                                                    Map<String, Object> originMap,
-                                                    Map<String, Object> originAliasMap) {
-        Field[] targetFieldList = beanClass.getDeclaredFields();
-        for (Field field : targetFieldList) {
-            try {
-                //初始化当前属性的描述器
-                PropertyDescriptor propertyDescriptor = new PropertyDescriptor(field.getName(), beanClass);
-                //获取当前属性的set方法
-                Method method = propertyDescriptor.getWriteMethod();
-                //判断是否来源对象存在符合的别名
-                SFieldAlias annotation = field.getAnnotation(SFieldAlias.class);
-                //存在注解
-                if (annotation != null &&
-                        annotation.originName()!=null && annotation.originName()!="" &&
-                        !annotation.originName().equals(field.getName())) {
-                    //匹配 target注解-originField
-                    if (originMap.get(annotation.originName())!=null) {
-                        method.invoke(targetBean, originMap.get(annotation.originName()));
-                        continue;
-                    }
-                    //匹配 origin注解-target注解
-                    if (originAliasMap.get(annotation.originName())!=null) {
-                        method.invoke(targetBean, originAliasMap.get(annotation.originName()));
-                        continue;
-                    }
-                }
-                String fieldName = field.getName();
-                //匹配 origin注解-targetField
-                if (originAliasMap.get(fieldName)!=null) {
-                    method.invoke(targetBean, originAliasMap.get(fieldName));
-                }
-            } catch (IntrospectionException | IllegalAccessException | InvocationTargetException ignored) {
-            }
-        }
-        if (beanClass.getSuperclass()!=null) {
-            settingTargetFieldWithValue(targetBean, beanClass.getSuperclass(), originMap, originAliasMap);
-        }
-    }
+public class SBeanUtil extends SAliasBeanBasic {
 
     public static <T,R>  List<T> foreachCustom(List<T> list,
                                                Function<T,R> function,
@@ -148,7 +62,7 @@ public class SBeanUtil {
      */
     public static <R,T> T clone(R origin,T target) {
         if (SUtil.isBlank(origin,target)) {
-            throw new RuntimeException("origin and target can not be null");
+            return target;
         }
         BeanCopierUtils.copyProperties(origin, target);
         return target;
@@ -241,9 +155,12 @@ public class SBeanUtil {
         Map<String, Object> originMap = new HashMap<>(16);
         Map<String, Object> originAliasMap = new HashMap<>(16);
         //生成源bean的属性及其值的字典
-        generateOriginFieldWithValue(origin, origin.getClass(), originMap, originAliasMap);
+        SAliasBeanBasic.generateOriginFieldWithValue(origin, originMap, originAliasMap);
+
+        T newTarget = clone(origin,target);
+
         //设置目标bean的属性值
-        settingTargetFieldWithValue(target, target.getClass(), originMap, originAliasMap);
+        SAliasBeanBasic.settingTargetFieldWithValue(newTarget, originMap, originAliasMap);
         return target;
     }
 
@@ -337,5 +254,4 @@ public class SBeanUtil {
         LinkedHashSet<T> temp = new LinkedHashSet<>(list);
         return new ArrayList<>(temp);
     }
-
 }

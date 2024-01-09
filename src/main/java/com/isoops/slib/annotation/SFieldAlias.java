@@ -12,11 +12,17 @@ public @interface SFieldAlias {
     /**
      * 在即将被拷贝的属性上面,设置目标属性名
      */
+    @Deprecated
     String targetName() default "";
 
     /**
      * 在即将拷贝至改属性上面,设置源属性名
      */
+    @Deprecated
     String originName() default "";
 
+    /**
+     * 设置目标/源属性名
+     */
+    String name() default "";
 }
