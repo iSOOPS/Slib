@@ -2,6 +2,7 @@ package com.isoops.slib.redis;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
+import com.isoops.slib.DelegateLocator;
 import com.isoops.slib.utils.SUtil;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
@@ -14,10 +15,11 @@ import java.util.concurrent.TimeUnit;
 public class SRedis {
 
     @Resource
-    private StringRedisTemplate stringRedisTemplate;
+    private DelegateLocator delegateLocator;
 
     public StringRedisTemplate getTemplate() {
-        return stringRedisTemplate;
+        RedisDelegate delegate = delegateLocator.get(RedisDelegate.class);
+        return delegate.getStringRedisTemplate();
     }
 
     public boolean set(String key, Object obj) {
@@ -34,10 +36,10 @@ public class SRedis {
         }
         try {
             if (time == null || unit == null){
-                stringRedisTemplate.opsForValue().set(key, (obj instanceof String) ? (String) obj : JSON.toJSONString(obj));
+                getTemplate().opsForValue().set(key, (obj instanceof String) ? (String) obj : JSON.toJSONString(obj));
             }
             else {
-                stringRedisTemplate.opsForValue().set(key, (obj instanceof String) ? (String) obj : JSON.toJSONString(obj), time, unit);
+                getTemplate().opsForValue().set(key, (obj instanceof String) ? (String) obj : JSON.toJSONString(obj), time, unit);
             }
             return true;
         } catch (Exception e) {
@@ -50,24 +52,24 @@ public class SRedis {
         if (SUtil.isBlank(key)){
             return null;
         }
-        return stringRedisTemplate.opsForValue().get(key);
+        return getTemplate().opsForValue().get(key);
     }
 
     public <T>T get(String key, Class<T> tClass){
         if (SUtil.isBlank(key) || tClass == String.class){
             return null;
         }
-        String value = stringRedisTemplate.opsForValue().get(key);
+        String value = getTemplate().opsForValue().get(key);
         if (value == null){
             return null;
         }
         return JSON.parseObject(value,tClass);
     }
     public <T>List<T> get(Collection<String> keys, Class<T> tClass) {
-        if (SUtil.isBlank(keys) || keys.size()<1){
+        if (SUtil.isBlank(keys) || keys.isEmpty()){
             return null;
         }
-        List<String> strings = stringRedisTemplate.opsForValue().multiGet(keys);
+        List<String> strings = getTemplate().opsForValue().multiGet(keys);
         List<T> response = new ArrayList<>();
         if (strings != null) {
             for (String json : strings){
@@ -81,7 +83,7 @@ public class SRedis {
         if (SUtil.isBlank(key)){
             return null;
         }
-        String value = stringRedisTemplate.opsForValue().get(key);
+        String value = getTemplate().opsForValue().get(key);
         return JSONArray.parseArray(value,tClass);
     }
 
@@ -90,7 +92,7 @@ public class SRedis {
             return false;
         }
         try {
-            stringRedisTemplate.delete(key);
+            getTemplate().delete(key);
             return true;
         } catch (Exception e){
             e.printStackTrace();
@@ -100,11 +102,11 @@ public class SRedis {
 
     public boolean delete(String ...arg) {
         List<String> list = Arrays.asList(arg);
-        if (list.size()<1){
+        if (list.isEmpty()){
             return false;
         }
         try {
-            stringRedisTemplate.delete(list);
+            getTemplate().delete(list);
             return true;
         } catch (Exception e){
             e.printStackTrace();
@@ -113,11 +115,11 @@ public class SRedis {
     }
 
     public boolean delete(List<String> list) {
-        if (null == list || list.size()<1){
+        if (null == list || list.isEmpty()){
             return false;
         }
         try {
-            stringRedisTemplate.delete(list);
+            getTemplate().delete(list);
             return true;
         } catch (Exception e){
             e.printStackTrace();
@@ -131,7 +133,7 @@ public class SRedis {
         if (SUtil.isBlank(key,increment)){
             return null;
         }
-        return stringRedisTemplate.opsForValue().increment(key, increment);
+        return getTemplate().opsForValue().increment(key, increment);
     }
 
     /**
@@ -142,7 +144,7 @@ public class SRedis {
             return false;
         }
         try {
-            return stringRedisTemplate.expire(key,time,unit);
+            return Boolean.TRUE.equals(getTemplate().expire(key, time, unit));
         } catch (Exception e){
             e.printStackTrace();
             return false;
@@ -156,7 +158,7 @@ public class SRedis {
         if (SUtil.isBlank(key)){
             return false;
         }
-        return stringRedisTemplate.persist(key);
+        return getTemplate().persist(key);
     }
 
     /**
@@ -166,7 +168,7 @@ public class SRedis {
         if (SUtil.isBlank(key,unit)){
             return null;
         }
-        return stringRedisTemplate.getExpire(key, unit);
+        return getTemplate().getExpire(key, unit);
     }
 
     /**
@@ -176,7 +178,7 @@ public class SRedis {
         if (SUtil.isBlank(key)){
             return false;
         }
-        return stringRedisTemplate.hasKey(key);
+        return Boolean.TRUE.equals(getTemplate().hasKey(key));
     }
 
     /**
@@ -186,7 +188,7 @@ public class SRedis {
         if (SUtil.isBlank(pattern)){
             return null;
         }
-        return stringRedisTemplate.keys(pattern);
+        return getTemplate().keys(pattern);
     }
 
 
@@ -198,7 +200,7 @@ public class SRedis {
         if (SUtil.isBlank(key,value,time,unit)){
             return false;
         }
-        return stringRedisTemplate.opsForValue().setIfAbsent(key, value, time, unit);
+        return Boolean.TRUE.equals(getTemplate().opsForValue().setIfAbsent(key, value, time, unit));
     }
 
     /**
@@ -209,7 +211,7 @@ public class SRedis {
         if (SUtil.isBlank(key)){
             return false;
         }
-        return stringRedisTemplate.opsForValue().getOperations().delete(key);
+        return Boolean.TRUE.equals(getTemplate().opsForValue().getOperations().delete(key));
     }
 
 }

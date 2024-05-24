@@ -1,6 +1,6 @@
 package com.isoops.slib.common;
 
-import com.isoops.slib.annotation.SFieldAlias;
+import com.isoops.slib.pojo.SFieldAlias;
 import com.isoops.slib.utils.SFieldUtil;
 import com.isoops.slib.utils.SLog;
 
@@ -25,7 +25,7 @@ public class SBeanBasic {
         if (a == null) {
             return null;
         }
-        String tName = a.targetName().isEmpty() ? a.name() : a.targetName();
+        String tName = a.name();
         if (tName == null) {
             return null;
         }
@@ -40,7 +40,15 @@ public class SBeanBasic {
         if (a == null) {
             return null;
         }
-        return a.originName().isEmpty() ? a.name() : a.originName();
+        return a.name();
+    }
+
+    protected static String[] getAnnotationOriginNames(Field field) {
+        SFieldAlias a = field.getAnnotation(SFieldAlias.class);
+        if (a == null) {
+            return null;
+        }
+        return a.names();
     }
 
     protected static String errorMsg(Object targetBean,Field field,Object originValue) {
@@ -49,19 +57,18 @@ public class SBeanBasic {
         return targetFiledName + "与" + originFiledName + "类型不一致";
     }
 
-    protected static boolean setObject(Object originValue, Field field, Method methodOfSet, Object targetBean) {
+    protected static void setObject(Object originValue, Field field, Method methodOfSet, Object targetBean) {
         if (originValue==null) {
-            return false;
+            return;
         }
         if (field.getType().equals(String.class)) {
-            SFieldUtil.doObjectByMethod(methodOfSet,targetBean,String.valueOf(originValue));
-            return false;
+            SFieldUtil.setObjectByMethod(methodOfSet,targetBean,String.valueOf(originValue));
+            return;
         }
         if (!field.getType().equals(originValue.getClass())) {
             SLog.warn(errorMsg(targetBean,field,originValue));
-            return false;
+            return;
         }
-        SFieldUtil.doObjectByMethod(methodOfSet,targetBean,originValue);
-        return true;
+        SFieldUtil.setObjectByMethod(methodOfSet,targetBean,originValue);
     }
 }

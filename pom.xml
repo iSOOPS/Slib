@@ -11,24 +11,25 @@
 
     <groupId>com.isoops</groupId>
     <artifactId>SLib</artifactId>
-    <version>1.1.2-RELEASE</version>
+    <version>1.2.2-RELEASE</version>
     <name>SLib</name>
     <description>Java gen Utils</description>
 
     <properties>
         <java.version>8</java.version>
-        <commons.lang.version>3.12.0</commons.lang.version>
-        <commons.io.version>2.11.0</commons.io.version>
-        <commons.configuration.version>1.10</commons.configuration.version>
+        <commons.lang.version>3.14.0</commons.lang.version>
+        <commons.text.version>1.12.0</commons.text.version>
         <fastjson.version>2.0.26</fastjson.version>
         <lombok.version>1.18.26</lombok.version>
-        <hutool.version>5.8.4</hutool.version>
+        <hutool.version>5.8.27</hutool.version>
         <pagehelper.spring.boot.version>1.4.6</pagehelper.spring.boot.version>
         <aspectjweaver.version>1.9.19</aspectjweaver.version>
         <servlet.version>4.0.1</servlet.version>
         <mybatisplus.version>3.5.3.1</mybatisplus.version>
         <protostuff.version>1.8.0</protostuff.version>
         <javadoc.version>3.5.0</javadoc.version>
+        <bouncycastle.version>1.78</bouncycastle.version>
+        <jedis.version>4.4.2</jedis.version>
 
         <gpg.keyname>B4BEED15FBD83F5FB041580B7B43B3D8834843BC</gpg.keyname>
         <!--打包跳过测试-->
@@ -54,12 +55,11 @@
             <artifactId>commons-pool2</artifactId>
         </dependency>
 
-
         <!-- https://mvnrepository.com/artifact/redis.clients/jedis -->
         <dependency>
             <groupId>redis.clients</groupId>
             <artifactId>jedis</artifactId>
-            <version>4.4.2</version>
+            <version>${jedis.version}</version>
         </dependency>
 
 
@@ -109,16 +109,11 @@
             <version>${commons.lang.version}</version>
         </dependency>
 
+        <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-text -->
         <dependency>
-            <groupId>commons-io</groupId>
-            <artifactId>commons-io</artifactId>
-            <version>${commons.io.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>commons-configuration</groupId>
-            <artifactId>commons-configuration</artifactId>
-            <version>${commons.configuration.version}</version>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-text</artifactId>
+            <version>${commons.text.version}</version>
         </dependency>
 
         <dependency>
@@ -179,6 +174,13 @@
             <version>${hutool.version}</version>
         </dependency>
 
+        <!-- https://mvnrepository.com/artifact/cn.hutool/hutool-crypto -->
+<!--        <dependency>-->
+<!--            <groupId>cn.hutool</groupId>-->
+<!--            <artifactId>hutool-crypto</artifactId>-->
+<!--            <version>${hutool.version}</version>-->
+<!--        </dependency>-->
+
         <!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-assembly-plugin -->
         <dependency>
             <groupId>org.apache.maven.plugins</groupId>
@@ -186,10 +188,14 @@
             <version>3.5.0</version>
         </dependency>
 
+        <!-- https://mvnrepository.com/artifact/org.bouncycastle/bcprov-jdk18on -->
+        <dependency>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcprov-jdk18on</artifactId>
+            <version>${bouncycastle.version}</version>
+        </dependency>
+
     </dependencies>
-
-
-
 
     <licenses>
         <!-- 开源协议 -->
@@ -232,7 +238,6 @@
             <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
         </repository>
     </distributionManagement>
-
 
     <build>
         <plugins>

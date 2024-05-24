@@ -1,29 +1,20 @@
-package com.isoops.slib.annotation;
+package com.isoops.slib.annotation.logger;
 
 
 import java.lang.annotation.*;
 
 /**
- * 日志通用注解
+ * 自定义日志注解
  * @author samuel
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.METHOD)
+@Target({ElementType.TYPE, ElementType.METHOD})
 @Documented
 public @interface Logger {
 
     /**
      * 日志范围
      */
-    LoggerEnum logType() default LoggerEnum.ALL;
+    LogEnum level() default LogEnum.Full;
 
-    /**
-     * 自定义输出
-     */
-    String msg() default "controller";
-
-    /**
-     * 需要打印请求的对象
-     */
-    Class<Object> clazz() default Object.class;
 }

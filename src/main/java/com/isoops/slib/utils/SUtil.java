@@ -38,9 +38,7 @@ public class SUtil {
             }
         }
         if (temp instanceof List){
-            if (((List<?>) temp).size() < 1){
-                return true;
-            }
+            return ((List<?>) temp).isEmpty();
         }
         return false;
     }

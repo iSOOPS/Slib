@@ -24,7 +24,8 @@ import java.util.function.Function;
  * @see #getFunctionFiled(Function)                 getFunctionFiled    获取 field-string
  * @see #setProperty(Object, String, Object)        setProperty         给泛型写入值
  * @see #getMethodByField(Field, Class, Boolean)    getMethodByField    获取method set/get 方法
- * @see #doObjectByMethod(Method, Object)           doObjectByMethod    通过获取method后取/存值
+ * @see #getObjectByMethod(Method, Object)          doObjectByMethod    通过获取method后取值
+ * @see #setObjectByMethod(Method, Object, Object)  doObjectByMethod    通过获取method后存值
  *
  */
 public class SFieldUtil {
@@ -164,9 +165,9 @@ public class SFieldUtil {
     }
 
     /**
-     * 通过获取method后取/存值
+     * 通过获取method后取值
      */
-    public static Object doObjectByMethod(Method method,Object object) {
+    public static Object getObjectByMethod(Method method,Object object) {
         if (method == null) {
             return null;
         }
@@ -178,7 +179,10 @@ public class SFieldUtil {
         }
     }
 
-    public static void doObjectByMethod(Method method,Object object,Object toObejct) {
+    /**
+     * 通过获取method后存值
+     */
+    public static void setObjectByMethod(Method method,Object object,Object toObejct) {
         if (method == null) {
             return;
         }

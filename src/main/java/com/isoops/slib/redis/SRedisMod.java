@@ -9,7 +9,6 @@ import com.isoops.slib.utils.SFieldUtil;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.SneakyThrows;
-import org.springframework.stereotype.Component;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.exceptions.JedisDataException;
@@ -20,7 +19,7 @@ import redis.clients.jedis.search.schemafields.SchemaField;
 
 import java.util.*;
 
-@Component
+
 public class SRedisMod {
 
     /******************************* json custom mod *******************************/

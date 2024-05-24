@@ -50,12 +50,25 @@ public class AbstractObject {
 	}
 
 	/**
-	 * 别名克隆
+	 * 别名克隆(全覆盖)
 	 */
 	public <T> T aliasClone(T target) {
 		return SBeanUtil.aliasClone(this,target);
 	}
 
+	/**
+	 * 别名克隆(填充且覆盖)
+	 */
+	public <T> T aliasFillReplaceClone(T target) {
+		return SBeanUtil.aliasFillReplaceClone(this,target);
+	}
+
+	/**
+	 * 别名克隆(仅填充不覆盖)
+	 */
+	public <T> T aliasFillUnReplaceClone(T target) {
+		return SBeanUtil.aliasFillUnReplaceClone(this,target);
+	}
 
 	/**
 	 * 深度克隆/递归所有内部对象

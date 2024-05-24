@@ -1,7 +1,7 @@
 package com.isoops.slib.utils;
 
 import cn.hutool.core.collection.CollUtil;
-import com.isoops.slib.annotation.SFieldAlias;
+import com.isoops.slib.pojo.SFieldAlias;
 import com.isoops.slib.common.SAliasBeanBasic;
 import com.isoops.slib.pojo.AbstractObject;
 import com.isoops.slib.pojo.BeanCopierUtils;
@@ -13,23 +13,25 @@ import java.util.function.Function;
  * 对象操作工具类 Clone/List操作等 适用与DDD转化
  * @author samuel
  *
- * @see #clone(Object, Object)                      clone               克隆,对象与对象
- * @see #clone(Object, Class)                       clone               克隆,复制克隆
- * @see #clones(List, Class)                        clones              克隆,复制克隆
- * @see #clones(List, Class, Integer)               clones              克隆,Domain定向深克隆,类型见{@link com.isoops.slib.pojo.CloneDirection}
- * @see #aliasClone(Object, Object)                 aliasClone          别名克隆,对象与对象,支持克隆对象增加别名注解{@link SFieldAlias}
- * @see #aliasClone(Object, Class)                  aliasClone          别名克隆,复制克隆,支持克隆对象增加别名注解{@link SFieldAlias}
- * @see #aliasClones(List, Class)                   aliasClones         别名克隆,对象与对象,支持克隆对象增加别名注解{@link SFieldAlias}
- * @see #methodOfAlias(Object, Object)              methodOfAlias       别名操作,仅操作注解的别名复制
+ * @see #clone(Object, Object)                      clone                   克隆,对象与对象
+ * @see #clone(Object, Class)                       clone                   克隆,复制克隆
+ * @see #clones(List, Class)                        clones                  克隆,复制克隆
+ * @see #clones(List, Class, Integer)               clones                  克隆,Domain定向深克隆,类型见{@link com.isoops.slib.pojo.CloneDirection}
+ * @see #aliasClone(Object, Object)                 aliasClone              别名克隆,对象与对象,支持克隆对象增加别名注解{@link SFieldAlias}
+ * @see #aliasFillReplaceClone(Object, Object)      aliasFillReplaceClone   别名克隆(填充且覆盖),复制克隆,支持克隆对象增加别名注解{@link SFieldAlias}
+ * @see #aliasFillUnReplaceClone(Object, Object)    aliasFillUnReplaceClone 别名克隆(仅填充不覆盖),复制克隆,支持克隆对象增加别名注解{@link SFieldAlias}
+ * @see #aliasClone(Object, Class)                  aliasClone              别名克隆,复制克隆,支持克隆对象增加别名注解{@link SFieldAlias}
+ * @see #aliasClones(List, Class)                   aliasClones             别名克隆,对象与对象,支持克隆对象增加别名注解{@link SFieldAlias}
+ * @see #methodOfAlias(Object, Object ,Boolean ,Boolean) methodOfAlias      别名操作,仅操作注解的别名复制
  *
- * @see #foreach(List, Function)                    foreach             数组重组,指定数组里对象的某一个feild,取出重组一个数组
- * @see #foreachByKey(List, Function, Object)       foreachByKey        数组重组,获取数组中对象的某个值,将满足条件的值,重组成一个新数组
- * @see #foreachByListKey(List, Function, List)     foreachByListKey    数组重组,获取数组中对象的某个值,将满足条件的值,重组成一个新数组
- * @see #foreachByNotKey(List, Function, Object)    foreachByNotKey     数组重组,获取数组中对象的某个值,将满足条件的值,重组成一个新数组
- * @see #foreachByListNotKey(List, Function, List)  foreachByListNotKey 数组重组,获取数组中对象的某个值,将满足条件的值,重组成一个新数组
+ * @see #foreach(List, Function)                    foreach                 数组重组,指定数组里对象的某一个feild,取出重组一个数组
+ * @see #foreachByKey(List, Function, Object)       foreachByKey            数组重组,获取数组中对象的某个值,将满足条件的值,重组成一个新数组
+ * @see #foreachByListKey(List, Function, List)     foreachByListKey        数组重组,获取数组中对象的某个值,将满足条件的值,重组成一个新数组
+ * @see #foreachByNotKey(List, Function, Object)    foreachByNotKey         数组重组,获取数组中对象的某个值,将满足条件的值,重组成一个新数组
+ * @see #foreachByListNotKey(List, Function, List)  foreachByListNotKey     数组重组,获取数组中对象的某个值,将满足条件的值,重组成一个新数组
  *
- * @see #disposeSetList(List, List, SETTYPE)        disposeSetList      数组重组,获取2个数组的差/交/并集
- * @see #outDuplicate(List)                         outDuplicate        数组重组,数组去重
+ * @see #disposeSetList(List, List, SETTYPE)        disposeSetList          数组重组,获取2个数组的差/交/并集
+ * @see #outDuplicate(List)                         outDuplicate            数组重组,数组去重
  */
 public class SBeanUtil extends SAliasBeanBasic {
 
@@ -46,10 +48,19 @@ public class SBeanUtil extends SAliasBeanBasic {
             if (SUtil.isBlank(r)){
                 continue;
             }
+            boolean isSufficient = true;
             for (R r1 : values){
-                if ((isEquals && r.equals(r1)) || (!isEquals && !r.equals(r1))) {
-                    res.add(object);
+                if (r.equals(r1)) {
+                    if (isEquals) {
+                        res.add(object);
+                        break;
+                    }
+                    isSufficient = false;
+                    break;
                 }
+            }
+            if (isSufficient && !isEquals){
+                res.add(object);
             }
         }
         return res;
@@ -81,7 +92,7 @@ public class SBeanUtil extends SAliasBeanBasic {
      * example: List[T]=clones(List[R],T.class)
      */
     public static <R,T> List<T> clones(List<R> origins, Class<T> clazz) {
-        if(origins == null || origins.size() < 1) {
+        if(origins == null || origins.isEmpty()) {
             return new ArrayList<>();
         }
         List<T> targets = new ArrayList<>();
@@ -98,7 +109,7 @@ public class SBeanUtil extends SAliasBeanBasic {
      */
     public static <R extends AbstractObject,T> List<T> clones(List<R> origins, Class<T> clazz,
                                                               Integer direction){
-        if(origins == null || origins.size() < 1) {
+        if(origins == null || origins.isEmpty()) {
             return new ArrayList<>();
         }
         List<T> targets = new ArrayList<>();
@@ -113,12 +124,30 @@ public class SBeanUtil extends SAliasBeanBasic {
     }
 
     /**
-     * 别名克隆
+     * 别名克隆(全覆盖)
      * example: T=aliasClone(R,T)
      * desc: 该克隆支持SFieldAlias注解,可以给field增加别名alias,克隆后可匹配别名写入
      */
     public static <T,V> V aliasClone(T origin,V target) {
-        return methodOfAlias(origin,clone(origin,target));
+        return methodOfAlias(origin,clone(origin,target),false,true);
+    }
+
+    /**
+     * 别名克隆(填充且覆盖)
+     * example: T=aliasFillClone(R,T)
+     * desc: 该克隆支持SFieldAlias注解,可以给field增加别名alias,克隆后可匹配别名写入
+     */
+    public static <T,V> V aliasFillReplaceClone(T origin,V target) {
+        return methodOfAlias(origin,clone(origin,target),true,true);
+    }
+
+    /**
+     * 别名克隆(仅填充不覆盖)
+     * example: T=aliasFillClone(R,T)
+     * desc: 该克隆支持SFieldAlias注解,可以给field增加别名alias,克隆后可匹配别名写入
+     */
+    public static <T,V> V aliasFillUnReplaceClone(T origin,V target) {
+        return methodOfAlias(origin,clone(origin,target),true,false);
     }
 
     /**
@@ -127,7 +156,7 @@ public class SBeanUtil extends SAliasBeanBasic {
      * desc: 该克隆支持SFieldAlias注解,可以给field增加别名alias,克隆后可匹配别名写入
      */
     public static <T,V> V aliasClone(T origin,Class<V> clazz) {
-        return methodOfAlias(origin,clone(origin,clazz));
+        return methodOfAlias(origin,clone(origin,clazz),false,true);
     }
 
     /**
@@ -136,7 +165,7 @@ public class SBeanUtil extends SAliasBeanBasic {
      * desc: 该克隆支持SFieldAlias注解,可以给field增加别名alias,克隆后可匹配别名写入
      */
     public static <R,T> List<T> aliasClones(List<R> origins, Class<T> clazz) {
-        if(origins == null || origins.size() < 1) {
+        if(origins == null || origins.isEmpty()) {
             return new ArrayList<>();
         }
         List<T> targets = new ArrayList<>();
@@ -151,7 +180,7 @@ public class SBeanUtil extends SAliasBeanBasic {
      * example: T=methodOfAlias(R,T)
      * desc: 仅操作注解的别名复制
      */
-    public static <T,R> T methodOfAlias(R origin,T target) {
+    public static <T,R> T methodOfAlias(R origin,T target,Boolean isFill,Boolean isReplace) {
         Map<String, Object> originMap = new HashMap<>(16);
         Map<String, Object> originAliasMap = new HashMap<>(16);
         //生成源bean的属性及其值的字典
@@ -160,7 +189,7 @@ public class SBeanUtil extends SAliasBeanBasic {
         T newTarget = clone(origin,target);
 
         //设置目标bean的属性值
-        SAliasBeanBasic.settingTargetFieldWithValue(newTarget, originMap, originAliasMap);
+        SAliasBeanBasic.settingTargetFieldWithValue(newTarget, originMap, originAliasMap,isFill,isReplace);
         return target;
     }
 
@@ -253,5 +282,17 @@ public class SBeanUtil extends SAliasBeanBasic {
     public static <T> List<T> outDuplicate(List<T> list){
         LinkedHashSet<T> temp = new LinkedHashSet<>(list);
         return new ArrayList<>(temp);
+    }
+
+    /**
+     * 获取数组对象
+     */
+    public static <T,R> T get(List<T> list,Function<T,R> function, R value) {
+        for (T t : list) {
+            if (function.apply(t)!=null && function.apply(t).equals(value)) {
+                return t;
+            }
+        }
+        return null;
     }
 }

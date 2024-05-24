@@ -1,57 +1,86 @@
-package com.isoops.slib.annotation.comtract;
+package com.isoops.slib.annotation;
 
-import com.isoops.slib.utils.SObjectUtil;
 import org.aspectj.lang.JoinPoint;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.aspectj.lang.reflect.MethodSignature;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.List;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
+import java.util.*;
 
 public class BasicContract {
 
     /**
-     * 获取切片拦截的对象（body请求用）
-     * @param joinPoint 切片对象
-     * @param clazz 对象class类型
-     * @param <T> 类型
-     * @return f
+     * 获取 http 请求对象
      */
-    protected <T> List<T> getArgsModel(JoinPoint joinPoint, Class<T> clazz){
-        Object[] args = joinPoint.getArgs();
-        List<T> result = new ArrayList<>();
-        for (Object arg : args) {
-            if (arg.getClass().equals(clazz)) {
-                result.add((T) arg);
-            }
+    protected HttpServletRequest getRequest() {
+        ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        if (attributes == null) {
+            throw new IllegalStateException("RequestContextHolder is not set");
         }
-        return result.isEmpty() ? null : result;
+        return attributes.getRequest();
     }
 
     /**
-     * 获取切片拦截URL并反射对象（get请求用）
-     * @param request r
-     * @param clazz 对象class类型
-     * @param <T> 对象泛型
-     * @return f
+     * 获取注解对象
      */
-    protected <T> T getArgsByUri(HttpServletRequest request, Class<T> clazz) {
-        //初始化泛型对象
-        try {
-            T entity = clazz.getDeclaredConstructor().newInstance();
-            //获取request中uri中提交的参数key
-            Enumeration<String> enu = request.getParameterNames();
-            while (enu.hasMoreElements()) {
-                String paraName = enu.nextElement();
-                //写入值，若值不存在于该对象，则不会写入
-                SObjectUtil.setProperty(entity, paraName, request.getParameter(paraName));
+    protected <T extends Annotation>T getAnnotation(JoinPoint joinPoint, Class<T> clazz) {
+        MethodSignature methodSignature = (MethodSignature) joinPoint.getSignature();
+        Method method = methodSignature.getMethod();
+        T annotation = method.getAnnotation(clazz);
+        if (annotation == null) {
+            Class<?> tagClass = methodSignature.getDeclaringType();
+            boolean isAnnotation = tagClass.isAnnotationPresent(clazz);
+            if(isAnnotation){
+                annotation = tagClass.getAnnotation(clazz);
             }
-            return entity;
-        } catch (Exception e) {
-            e.printStackTrace();
         }
-        return null;
+        return annotation;
+    }
+
+    /**
+     * 获取请求对象
+     */
+    protected Object getRequestObject(JoinPoint joinPoint) {
+        HttpServletRequest request = getRequest();
+        Object requestObject = null;
+        switch (Objects.requireNonNull(ContractFacory.stringToMethod(request.getMethod()))) {
+            case GET: {
+                Map<String,Object> map = new HashMap<>();
+                //获取request中uri中提交的参数key
+                Enumeration<String> enu = request.getParameterNames();
+                while (enu.hasMoreElements()) {
+                    String paraName = enu.nextElement();
+                    map.put(paraName, request.getParameter(paraName));
+                }
+                requestObject = map;
+                break;
+            }
+            case POST: {
+                List<Object> objects = Arrays.asList(joinPoint.getArgs());
+                requestObject = objects.size() == 1 ? objects.get(0) : objects;
+                break;
+            }
+            default: {
+                break;
+            }
+        }
+        return requestObject;
+    }
+
+    protected String getHeaderString() {
+        HttpServletRequest request = getRequest();
+        Enumeration<String> requestHeadInfos = request.getHeaderNames();
+        StringBuilder heads = new StringBuilder();
+        while (requestHeadInfos.hasMoreElements()) {
+            String headName = requestHeadInfos.nextElement();
+            //根据请求头的名字获取对应的请求头的值
+            String headValue = request.getHeader(headName);
+            heads = new StringBuilder(heads + headName + "={" + headValue + "}; ");
+        }
+        return heads.toString();
     }
 
     protected String getUrlParameter(HttpServletRequest request){
@@ -62,75 +91,5 @@ public class BasicContract {
             url.append(paraName).append("=").append(request.getParameter(paraName)).append("&");
         }
         return url.substring(0,url.length()-1);
-    }
-
-    /**
-     * 获取真实的ip
-     * @param request r
-     * @return f
-     */
-    protected String getIpAddr(HttpServletRequest request) {
-        String ip = request.getHeader("x-forwarded-for");
-        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
-            ip = request.getHeader("Proxy-Client-IP");
-        }
-        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
-            ip = request.getHeader("WL-Proxy-Client-IP");
-        }
-        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
-            ip = request.getHeader("HTTP_CLIENT_IP");
-        }
-        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
-            ip = request.getHeader("HTTP_X_FORWARDED_FOR");
-        }
-        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
-            ip = request.getRemoteAddr();
-        }
-        return ip;
-    }
-
-    /**
-     * 获取调用接口名称
-     * @param request r
-     * @return f
-     */
-    protected String getInterfaceName(HttpServletRequest request) {
-        String uri = request.getRequestURI();
-        String[] sArray = uri.split("/");
-        if (sArray.length > 2) {
-            return sArray[2].substring(0, sArray[2].length() - 4);
-        }
-        return null;
-    }
-
-    protected RequestMethod stringToMethod(String method) {
-        switch (method) {
-            case "get":
-            case "GET":
-                return RequestMethod.GET;
-            case "post":
-            case "POST":
-                return RequestMethod.POST;
-            case "put":
-            case "PUT":
-                return RequestMethod.PUT;
-            case "delete":
-            case "DELETE":
-                return RequestMethod.DELETE;
-            case "head":
-            case "HEAD":
-                return RequestMethod.HEAD;
-            case "patch":
-            case "PATCH":
-                return RequestMethod.PATCH;
-            case "options":
-            case "OPTIONS":
-                return RequestMethod.OPTIONS;
-            case "trace":
-            case "TRACE":
-                return RequestMethod.TRACE;
-            default:
-                return null;
-        }
     }
 }
