@@ -2,6 +2,7 @@ package com.isoops.slib.annotation.comtract;
 
 import com.isoops.slib.utils.SObjectUtil;
 import org.aspectj.lang.JoinPoint;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
@@ -25,7 +26,7 @@ public class BasicContract {
                 result.add((T) arg);
             }
         }
-        return result.size() < 1 ? null : result;
+        return result.isEmpty() ? null : result;
     }
 
     /**
@@ -70,19 +71,19 @@ public class BasicContract {
      */
     protected String getIpAddr(HttpServletRequest request) {
         String ip = request.getHeader("x-forwarded-for");
-        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
             ip = request.getHeader("Proxy-Client-IP");
         }
-        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
             ip = request.getHeader("WL-Proxy-Client-IP");
         }
-        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
             ip = request.getHeader("HTTP_CLIENT_IP");
         }
-        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
             ip = request.getHeader("HTTP_X_FORWARDED_FOR");
         }
-        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+        if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
             ip = request.getRemoteAddr();
         }
         return ip;
@@ -100,5 +101,36 @@ public class BasicContract {
             return sArray[2].substring(0, sArray[2].length() - 4);
         }
         return null;
+    }
+
+    protected RequestMethod stringToMethod(String method) {
+        switch (method) {
+            case "get":
+            case "GET":
+                return RequestMethod.GET;
+            case "post":
+            case "POST":
+                return RequestMethod.POST;
+            case "put":
+            case "PUT":
+                return RequestMethod.PUT;
+            case "delete":
+            case "DELETE":
+                return RequestMethod.DELETE;
+            case "head":
+            case "HEAD":
+                return RequestMethod.HEAD;
+            case "patch":
+            case "PATCH":
+                return RequestMethod.PATCH;
+            case "options":
+            case "OPTIONS":
+                return RequestMethod.OPTIONS;
+            case "trace":
+            case "TRACE":
+                return RequestMethod.TRACE;
+            default:
+                return null;
+        }
     }
 }
