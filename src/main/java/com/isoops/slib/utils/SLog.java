@@ -40,22 +40,33 @@ public class SLog {
         return JSON.toJSONString(entity);
     }
 
+    private String stackTraceString() {
+        StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
+//         获取调用printCurrentMethodInfo()方法的栈帧，通常是主线程调用这个方法的地方
+        StackTraceElement caller = stackTraceElements[stackTraceElements.length -1];
+        return new StringBuilder(caller.getClassName())
+                .append(".")
+                .append(caller.getMethodName())
+                .append("[")
+                .append(caller.getLineNumber())
+                .append("]")
+                .toString();
+    }
+
     @SafeVarargs
     private static <T> String buildString(String msg, T ... args) {
         StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
-        // 获取调用printCurrentMethodInfo()方法的栈帧，通常是主线程调用这个方法的地方
+//         获取调用printCurrentMethodInfo()方法的栈帧，通常是主线程调用这个方法的地方
         StackTraceElement caller = stackTraceElements[stackTraceElements.length -1]; // 注意：数组索引从0开始，所以这里是2，而不是1
         msg = SUtil.isBlank(msg) ? "SLOG::" : msg;
-        StringBuilder builder = new StringBuilder(caller.getClassName()).append(".").append(caller.getMethodName());
-        builder.append("[").append(caller.getLineNumber()).append("]");
-        builder.append("[").append(msg).append("]");
+        StringBuilder builder = new StringBuilder("[").append(msg).append("]");
         if (args == null) {
             return builder.toString();
         }
         for (T t:args) {
             builder.append("\n").append(getJsonStr(t));
         }
-        return builder.toString();
+        return builder.append("\n").toString();
     }
 
     public static SLog getInstance(){

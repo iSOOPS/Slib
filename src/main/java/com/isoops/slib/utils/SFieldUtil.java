@@ -2,13 +2,19 @@ package com.isoops.slib.utils;
 
 import cn.hutool.core.util.StrUtil;
 
+import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
+import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.lang.invoke.SerializedLambda;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * 封装处理Class/Feild/Function的常用方法
@@ -159,6 +165,24 @@ public class SFieldUtil {
         try {
             descriptor = new PropertyDescriptor(field.getName(), clazz);
         } catch (IntrospectionException e) {
+            //兼容 lambok 的 @Accessors(chain = true) 导致无法获得反射方法的异常
+            BeanInfo beanInfo;
+            try {
+                beanInfo = Introspector.getBeanInfo(clazz);
+            } catch (IntrospectionException a) {
+                return null;
+            }
+            List<PropertyDescriptor> descriptors = Arrays.stream(beanInfo.getPropertyDescriptors()).filter(p -> {
+                String name = p.getName();
+                //过滤掉不需要修改的属性
+                return !"class".equals(name);
+            }).collect(Collectors.toList());
+
+            Map<String, PropertyDescriptor> map = descriptors.stream()
+                    .collect(Collectors.toMap(PropertyDescriptor::getName, p -> p));
+            if (map.containsKey(field.getName())) {
+                return needSet ? map.get(field.getName()).getWriteMethod() : map.get(field.getName()).getReadMethod();
+            }
             return null;
         }
         return needSet ? descriptor.getWriteMethod() : descriptor.getReadMethod();

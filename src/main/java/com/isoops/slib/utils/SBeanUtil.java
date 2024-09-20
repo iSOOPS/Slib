@@ -1,16 +1,17 @@
 package com.isoops.slib.utils;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
-import com.isoops.slib.pojo.SFieldAlias;
 import com.isoops.slib.common.SAliasBeanBasic;
 import com.isoops.slib.pojo.AbstractObject;
 import com.isoops.slib.pojo.BeanCopierUtils;
+import com.isoops.slib.pojo.SFieldAlias;
 
 import java.util.*;
 import java.util.function.Function;
 
 /**
- * 对象操作工具类 Clone/List操作等 适用与DDD转化
+ * 对象操作工具类 Clone/List操作等 适用与DDD转化 (若是用了 lambok 务必关闭对象的链式写法 @Accessors(chain = false))
  * @author samuel
  *
  * @see #clone(Object, Object)                      clone                   克隆,对象与对象
@@ -75,6 +76,10 @@ public class SBeanUtil extends SAliasBeanBasic {
         if (SUtil.isBlank(origin,target)) {
             return target;
         }
+        if (versionAfterEight()) {
+            BeanUtil.copyProperties(origin,target);
+            return target;
+        }
         BeanCopierUtils.copyProperties(origin, target);
         return target;
     }
@@ -129,7 +134,7 @@ public class SBeanUtil extends SAliasBeanBasic {
      * desc: 该克隆支持SFieldAlias注解,可以给field增加别名alias,克隆后可匹配别名写入
      */
     public static <T,V> V aliasClone(T origin,V target) {
-        return methodOfAlias(origin,clone(origin,target),false,true);
+        return methodOfAlias(origin,target,false,true);
     }
 
     /**
@@ -138,7 +143,7 @@ public class SBeanUtil extends SAliasBeanBasic {
      * desc: 该克隆支持SFieldAlias注解,可以给field增加别名alias,克隆后可匹配别名写入
      */
     public static <T,V> V aliasFillReplaceClone(T origin,V target) {
-        return methodOfAlias(origin,clone(origin,target),true,true);
+        return methodOfAlias(origin,target,true,true);
     }
 
     /**
@@ -147,7 +152,7 @@ public class SBeanUtil extends SAliasBeanBasic {
      * desc: 该克隆支持SFieldAlias注解,可以给field增加别名alias,克隆后可匹配别名写入
      */
     public static <T,V> V aliasFillUnReplaceClone(T origin,V target) {
-        return methodOfAlias(origin,clone(origin,target),true,false);
+        return methodOfAlias(origin,target,true,false);
     }
 
     /**
@@ -186,10 +191,8 @@ public class SBeanUtil extends SAliasBeanBasic {
         //生成源bean的属性及其值的字典
         SAliasBeanBasic.generateOriginFieldWithValue(origin, originMap, originAliasMap);
 
-        T newTarget = clone(origin,target);
-
         //设置目标bean的属性值
-        SAliasBeanBasic.settingTargetFieldWithValue(newTarget, originMap, originAliasMap,isFill,isReplace);
+        SAliasBeanBasic.settingTargetFieldWithValue(target, originMap, originAliasMap,isFill,isReplace);
         return target;
     }
 
@@ -294,5 +297,16 @@ public class SBeanUtil extends SAliasBeanBasic {
             }
         }
         return null;
+    }
+
+    public static <K,T> Map<K,T> toMap(List<T> list, Function<T,K> keyFunction) {
+        Map<K,T> map = new HashMap<>(16);
+        if (SUtil.isBlank(list)) {
+            return map;
+        }
+        for (T t : list) {
+            map.put(keyFunction.apply(t),t);
+        }
+        return map;
     }
 }

@@ -3,12 +3,19 @@ package com.isoops.slib.common;
 import com.isoops.slib.pojo.SFieldAlias;
 import com.isoops.slib.utils.SFieldUtil;
 import com.isoops.slib.utils.SLog;
+import org.springframework.data.util.Version;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 public class SBeanBasic {
+
+    protected static boolean versionAfterEight() {
+        String versionString = System.getProperty("java.version");
+        Version version = Version.parse(versionString);
+        return version.compareTo(Version.parse("8")) > 0;
+    }
 
     protected static <T> T createTarget(Class<T> clazz) {
         T target = null;

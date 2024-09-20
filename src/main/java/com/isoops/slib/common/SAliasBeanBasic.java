@@ -12,6 +12,8 @@ import java.util.Map;
 
 public class SAliasBeanBasic extends SBeanBasic {
 
+
+
     protected static List<String> aliasNames(Field field) {
         String name = getAnnotationOriginName(field);
         String[] names = getAnnotationOriginNames(field);
@@ -25,15 +27,19 @@ public class SAliasBeanBasic extends SBeanBasic {
         return nameList;
     }
 
+
     protected static void generateOriginFieldWithValue(Object originBean,
-                                                    Map<String, Object> originMap,
-                                                    Map<String, Object> originAliasMap) {
+                                                       Map<String, Object> originMap,
+                                                       Map<String, Object> originAliasMap) {
         Class<?> beanClass = originBean.getClass();
         Field[] targetFieldList = SFieldUtil.getFileds(beanClass);
         for (Field field : targetFieldList) {
             String name = field.getName();
 
             Method methodOfGet = SFieldUtil.getMethodByField(field,beanClass,false);
+            if (methodOfGet == null) {
+                continue;
+            }
             Object value = SFieldUtil.getObjectByMethod(methodOfGet,originBean);
 
             //存储值
